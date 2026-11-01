@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/fulfillment.requested.schema.json",
+  "title": "FulfillmentRequested payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["orderId", "reservationId", "fulfillmentRequestId", "siteId", "sku", "quantity"],
+  "properties": {
+    "orderId": { "type": "string", "pattern": "^ord_[A-Za-z0-9_-]+$" },
+    "reservationId": { "type": "string", "pattern": "^res_[A-Za-z0-9_-]+$" },
+    "fulfillmentRequestId": { "type": "string", "pattern": "^ful_[A-Za-z0-9_-]+$" },
+    "siteId": { "type": "string", "pattern": "^site_[A-Za-z0-9_-]+$" },
+    "sku": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "quantity": { "type": "integer", "minimum": 1 }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/order.placed.schema.json",
+  "title": "OrderPlaced payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["orderId", "customerId", "sku", "quantity", "siteId"],
+  "properties": {
+    "orderId": { "type": "string", "pattern": "^ord_[A-Za-z0-9_-]+$" },
+    "customerId": { "type": "string", "pattern": "^cust_[A-Za-z0-9_-]+$" },
+    "sku": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "quantity": { "type": "integer", "minimum": 1 },
+    "siteId": { "type": "string", "pattern": "^site_[A-Za-z0-9_-]+$" }
+  }
+}

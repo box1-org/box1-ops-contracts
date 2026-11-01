@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/shipment.confirmed.schema.json",
+  "title": "ShipmentConfirmed payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["orderId", "fulfillmentRequestId", "shipmentId", "shippedAt"],
+  "properties": {
+    "orderId": { "type": "string", "pattern": "^ord_[A-Za-z0-9_-]+$" },
+    "fulfillmentRequestId": { "type": "string", "pattern": "^ful_[A-Za-z0-9_-]+$" },
+    "shipmentId": { "type": "string", "pattern": "^shp_[A-Za-z0-9_-]+$" },
+    "shippedAt": { "type": "string", "format": "date-time" }
+  }
+}

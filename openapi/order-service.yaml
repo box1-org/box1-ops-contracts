@@ -1,0 +1,79 @@
+openapi: 3.1.0
+info:
+  title: Box1 Order Service API
+  version: 1.0.0
+paths:
+  /api/v1/orders:
+    post:
+      operationId: createOrder
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrder'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '409': { description: Idempotency key reused with another payload }
+        '400': { $ref: '#/components/responses/Problem' }
+    get:
+      operationId: listOrders
+      responses:
+        '200':
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Order' }
+  /api/v1/orders/{orderId}:
+    get:
+      operationId: getOrder
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '404': { description: Not found }
+components:
+  schemas:
+    CreateOrder:
+      type: object
+      additionalProperties: false
+      required: [customerId, sku, quantity, siteId]
+      properties:
+        customerId: { type: string, pattern: '^cust_[A-Za-z0-9_-]+$' }
+        sku: { type: string, minLength: 1 }
+        quantity: { type: integer, minimum: 1 }
+        siteId: { type: string, pattern: '^site_[A-Za-z0-9_-]+$' }
+    Order:
+      allOf:
+        - $ref: '#/components/schemas/CreateOrder'
+        - type: object
+          required: [orderId, state]
+          properties:
+            orderId: { type: string, pattern: '^ord_[A-Za-z0-9_-]+$' }
+            state: { type: string, enum: [SUBMITTED, RESERVED, FULFILLMENT_REQUESTED, SHIPPED, COMPLETED, REJECTED, EXCEPTION, CANCELLED] }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri-reference }
+        title: { type: string }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string }

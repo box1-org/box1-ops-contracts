@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/envelope.schema.json",
+  "title": "Box1 event envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "eventType", "schemaVersion", "aggregateId", "occurredAt", "correlationId", "causationId", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": { "type": "string", "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*\\.v[1-9][0-9]*$" },
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "aggregateId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "causationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "traceparent": { "type": "string", "pattern": "^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$" },
+    "tracestate": { "type": "string", "maxLength": 512 },
+    "payload": { "type": "object" }
+  }
+}

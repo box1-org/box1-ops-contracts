@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/equipment.reading.schema.json",
+  "title": "EquipmentReading payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assetId", "siteId", "measuredAt", "metricName", "value", "unit"],
+  "properties": {
+    "assetId": { "type": "string", "pattern": "^asset_[A-Za-z0-9_-]+$" },
+    "siteId": { "type": "string", "pattern": "^site_[A-Za-z0-9_-]+$" },
+    "measuredAt": { "type": "string", "format": "date-time" },
+    "metricName": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "value": { "type": "number", "finite": true },
+    "unit": { "type": "string", "minLength": 1, "maxLength": 20 }
+  }
+}
