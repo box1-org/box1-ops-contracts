@@ -13,3 +13,5 @@ npm run validate
 ```
 
 No credentials, customer PII, live topic data, or database exports belong here.
+
+PostgreSQL ownership, Flyway rules, Secret bootstrap, storage, backup, and restore guidance is in [`postgres/`](postgres/).
