@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "node --test test/contracts.test.mjs",
-    "validate": "node scripts/validate.mjs"
+    "test:drills": "node --test test/drills.test.mjs",
+    "validate": "node scripts/validate.mjs",
+    "drill": "node drills/recovery-drills.mjs"
   },
   "dependencies": {
     "ajv": "8.17.1",
