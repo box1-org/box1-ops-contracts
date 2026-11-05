@@ -1,0 +1,199 @@
+openapi: 3.1.0
+info:
+  title: Box1 Inventory Service API
+  version: 1.0.0
+  description: >
+    Reads are controlled by the service's read policy; see the service runbook. Internal
+    routes always need a verified bearer token with the inventory-admin role.
+paths:
+  /api/v1/inventory:
+    get:
+      operationId: listInventory
+      parameters:
+        - in: query
+          name: siteId
+          schema: { $ref: '#/components/schemas/SiteId' }
+        - in: query
+          name: sku
+          schema: { $ref: '#/components/schemas/Sku' }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: Stock levels ordered by siteId, then sku
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/StockLevel' }
+              example: [{ $ref: '#/components/examples/SeedStock/value' }]
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+  /api/v1/reservations/{reservationId}:
+    get:
+      operationId: getReservation
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+      responses:
+        '200':
+          description: Reservation
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reservation' }
+              example: { $ref: '#/components/examples/ActiveReservation/value' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /internal/v1/stock/{siteId}/{sku}/restock:
+    post:
+      operationId: restock
+      security: [{ bearer: [inventory-admin] }]
+      parameters:
+        - in: path
+          name: siteId
+          required: true
+          schema: { $ref: '#/components/schemas/SiteId' }
+        - in: path
+          name: sku
+          required: true
+          schema: { $ref: '#/components/schemas/Sku' }
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 255 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Restock' }
+            example: { quantity: 5, reason: Cycle count at site_nyc }
+      responses:
+        '200':
+          description: Stock after the restock. A repeat of the same key and body returns the current level and changes nothing.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockLevel' }
+              example: { $ref: '#/components/examples/SeedStock/value' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /internal/v1/reservations/{reservationId}/release:
+    post:
+      operationId: releaseReservation
+      security: [{ bearer: [inventory-admin] }]
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Release' }
+            example: { reason: Order reconciled by hand }
+      responses:
+        '200':
+          description: Reservation after release. Repeating a release changes nothing.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reservation' }
+              example: { $ref: '#/components/examples/ReleasedReservation/value' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    ReservationId:
+      in: path
+      name: reservationId
+      required: true
+      schema: { type: string, pattern: '^res_[A-Za-z0-9_-]{1,124}$' }
+  responses:
+    Problem:
+      description: RFC 9457 problem
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { type: 'about:blank', title: Not Found, status: 404, detail: Reservation not found }
+  examples:
+    SeedStock:
+      value: { siteId: site_nyc, sku: SKU-42, onHand: 100, reserved: 2, available: 98, updatedAt: '2026-11-05T12:00:00Z' }
+    ActiveReservation:
+      value:
+        reservationId: res_1042
+        orderId: ord_1042
+        siteId: site_nyc
+        sku: SKU-42
+        quantity: 2
+        status: ACTIVE
+        expiresAt: '2026-11-05T12:15:00Z'
+        createdAt: '2026-11-05T12:00:00Z'
+        updatedAt: '2026-11-05T12:00:00Z'
+    ReleasedReservation:
+      value:
+        reservationId: res_1042
+        orderId: ord_1042
+        siteId: site_nyc
+        sku: SKU-42
+        quantity: 2
+        status: RELEASED
+        expiresAt: '2026-11-05T12:15:00Z'
+        createdAt: '2026-11-05T12:00:00Z'
+        updatedAt: '2026-11-05T12:05:00Z'
+  schemas:
+    SiteId: { type: string, pattern: '^site_[A-Za-z0-9_-]{1,120}$' }
+    Sku: { type: string, minLength: 1, maxLength: 80 }
+    StockLevel:
+      type: object
+      additionalProperties: false
+      required: [siteId, sku, onHand, reserved, available, updatedAt]
+      properties:
+        siteId: { $ref: '#/components/schemas/SiteId' }
+        sku: { $ref: '#/components/schemas/Sku' }
+        onHand: { type: integer, minimum: 0 }
+        reserved: { type: integer, minimum: 0, description: Sum of ACTIVE and COMMITTED holds }
+        available: { type: integer, minimum: 0, description: onHand minus reserved }
+        updatedAt: { type: string, format: date-time }
+    Reservation:
+      type: object
+      additionalProperties: false
+      required: [reservationId, orderId, siteId, sku, quantity, status, expiresAt, createdAt, updatedAt]
+      properties:
+        reservationId: { type: string, pattern: '^res_[A-Za-z0-9_-]+$' }
+        orderId: { type: string, pattern: '^ord_[A-Za-z0-9_-]+$' }
+        siteId: { $ref: '#/components/schemas/SiteId' }
+        sku: { $ref: '#/components/schemas/Sku' }
+        quantity: { type: integer, minimum: 1 }
+        status: { type: string, enum: [ACTIVE, COMMITTED, CONSUMED, EXPIRED, RELEASED] }
+        expiresAt: { type: string, format: date-time, description: Not enforced once COMMITTED }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    Restock:
+      type: object
+      additionalProperties: false
+      required: [quantity, reason]
+      properties:
+        quantity: { type: integer, minimum: 1, maximum: 1000000 }
+        reason: { type: string, minLength: 1, maxLength: 200 }
+    Release:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 1, maxLength: 200 }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
