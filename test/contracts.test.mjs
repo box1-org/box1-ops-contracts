@@ -34,3 +34,17 @@ test('PostgreSQL fixtures use immutable Flyway names and contain no credentials'
   assert.match(fs.readFileSync(path.join(root, 'postgres/OWNERSHIP.md'), 'utf8'), /cannot connect to or read/);
   assert.match(fs.readFileSync(path.join(root, 'postgres/STORAGE-BACKUP-RESTORE.md'), 'utf8'), /pg_dump --format=custom/);
 });
+
+test('inventory contract covers reservation states, reason codes and its dead-letter topic', () => {
+  const doc = fs.readFileSync(path.join(root, 'INVENTORY-RESERVATIONS.md'), 'utf8');
+  for (const word of ['ACTIVE', 'COMMITTED', 'CONSUMED', 'EXPIRED', 'RELEASED', 'SITE_UNAVAILABLE', 'UNKNOWN_SKU', 'INSUFFICIENT_STOCK']) {
+    assert.match(doc, new RegExp(word));
+  }
+  const topics = fs.readFileSync(path.join(root, 'TOPICS.md'), 'utf8');
+  assert.match(topics, /box1\.inventory\.dlq\.v1/);
+  assert.match(topics, /box1\.fulfillment\.events\.v1.*`inventory`/);
+  const sql = fs.readFileSync(path.join(root, 'postgres/migrations/inventory/V1__create_inventory.sql'), 'utf8');
+  for (const word of ['inventory_stock', 'on_hand', 'outbox', 'COMMITTED', 'CONSUMED']) {
+    assert.match(sql, new RegExp(word));
+  }
+});
