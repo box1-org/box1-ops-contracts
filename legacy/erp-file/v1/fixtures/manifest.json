@@ -939,6 +939,55 @@
       "why": "magic ERP2"
     },
     {
+      "file": "inbound/invalid/version-2-new-shape.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "UNSUPPORTED_VERSION",
+      "why": "a v2 header with another field is still recognized as a version"
+    },
+    {
+      "file": "inbound/invalid/version-long.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "UNSUPPORTED_VERSION",
+      "why": "version check precedes length checks"
+    },
+    {
+      "file": "inbound/invalid/first-record-not-hdr.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "MALFORMED_RECORD",
+      "why": "no HDR|ERP<n> at the start"
+    },
+    {
+      "file": "inbound/invalid/header-says-res.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "HDR file type differs from the REQ name"
+    },
+    {
+      "file": "inbound/invalid/year-0001.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "year before 1970"
+    },
+    {
+      "file": "inbound/invalid/leap-second.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "second 60"
+    },
+    {
+      "file": "inbound/invalid/bad-name-bad-content.erp1",
+      "name": "notes.txt",
+      "valid": false,
+      "errorCode": "FILENAME_MISMATCH",
+      "why": "the name is checked before the content"
+    },
+    {
       "file": "inbound/invalid/lin-before-req.erp1",
       "name": "REQ.ful_1042.0a1b2c3d.erp1",
       "valid": false,
@@ -1031,10 +1080,10 @@
     },
     {
       "file": "inbound/invalid/wrong-prefix.erp1",
-      "name": "REQ.fr_1042.0a1b2c3d.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
       "valid": false,
       "errorCode": "FIELD_VALUE",
-      "why": "ful_ prefix missing"
+      "why": "ful_ prefix missing in the record; the field rule fires before the name-ID check"
     },
     {
       "file": "inbound/invalid/bad-origin.erp1",
@@ -1081,7 +1130,7 @@
           "type": "HDR",
           "magic": "ERP1",
           "fileType": "RES",
-          "createdAt": "2026-11-05T22:00:00.000Z"
+          "createdAt": "2026-11-05T22:01:00.000Z"
         },
         {
           "type": "RES",
@@ -1113,7 +1162,7 @@
           "type": "HDR",
           "magic": "ERP1",
           "fileType": "RES",
-          "createdAt": "2026-11-05T22:00:00.000Z"
+          "createdAt": "2026-11-05T22:02:00.000Z"
         },
         {
           "type": "RES",
@@ -1145,7 +1194,7 @@
           "type": "HDR",
           "magic": "ERP1",
           "fileType": "RES",
-          "createdAt": "2026-11-05T22:00:00.000Z"
+          "createdAt": "2026-11-05T22:03:00.000Z"
         },
         {
           "type": "RES",
@@ -1177,7 +1226,7 @@
           "type": "HDR",
           "magic": "ERP1",
           "fileType": "RES",
-          "createdAt": "2026-11-05T22:00:00.000Z"
+          "createdAt": "2026-11-05T22:04:00.000Z"
         },
         {
           "type": "RES",
@@ -1200,6 +1249,230 @@
       ]
     },
     {
+      "file": "outbound/valid/ful_1042-r2-other-result-id.erp1",
+      "name": "RES.ful_1042.000002.rsl_000000000000000000000000000000a1.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:02:30.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_000000000000000000000000000000a1",
+          "fulfillmentRequestId": "ful_1042",
+          "revision": "2",
+          "status": "HELD",
+          "orderId": "ord_1042",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:02:30.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_1042-r1-same-id-other-bytes.erp1",
+      "name": "RES.ful_1042.000001.rsl_00000000000000000000000000000001.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:01:30.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_00000000000000000000000000000001",
+          "fulfillmentRequestId": "ful_1042",
+          "revision": "1",
+          "status": "PENDING",
+          "orderId": "ord_1042",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:01:30.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_1042-r5-after-terminal.erp1",
+      "name": "RES.ful_1042.000005.rsl_000000000000000000000000000000a2.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:06:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_000000000000000000000000000000a2",
+          "fulfillmentRequestId": "ful_1042",
+          "revision": "5",
+          "status": "PENDING",
+          "orderId": "ord_1042",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:06:00.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_1042-r5-other-shipment.erp1",
+      "name": "RES.ful_1042.000005.rsl_000000000000000000000000000000a3.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:06:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_000000000000000000000000000000a3",
+          "fulfillmentRequestId": "ful_1042",
+          "revision": "5",
+          "status": "SHIPPED",
+          "orderId": "ord_1042",
+          "shipmentId": "shp_ffffffffffffffffffffffffffffffff",
+          "statusAt": "2026-11-05T22:06:00.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_9999-r1-unknown-request.erp1",
+      "name": "RES.ful_9999.000001.rsl_000000000000000000000000000000a4.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:01:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_000000000000000000000000000000a4",
+          "fulfillmentRequestId": "ful_9999",
+          "revision": "1",
+          "status": "PENDING",
+          "orderId": "ord_9999",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:01:00.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_1042-r1-other-order.erp1",
+      "name": "RES.ful_1042.000001.rsl_000000000000000000000000000000a5.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:01:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_000000000000000000000000000000a5",
+          "fulfillmentRequestId": "ful_1042",
+          "revision": "1",
+          "status": "PENDING",
+          "orderId": "ord_9999",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:01:00.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_2001-r1-pending.erp1",
+      "name": "RES.ful_2001.000001.rsl_000000000000000000000000000000a6.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:01:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_000000000000000000000000000000a6",
+          "fulfillmentRequestId": "ful_2001",
+          "revision": "1",
+          "status": "PENDING",
+          "orderId": "ord_2001",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:01:00.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "",
+          "traceparent": ""
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
       "file": "outbound/valid/ful_2001-r2-rejected.erp1",
       "name": "RES.ful_2001.000002.rsl_00000000000000000000000000000005.erp1",
       "valid": true,
@@ -1209,7 +1482,7 @@
           "type": "HDR",
           "magic": "ERP1",
           "fileType": "RES",
-          "createdAt": "2026-11-05T22:00:00.000Z"
+          "createdAt": "2026-11-05T22:05:00.000Z"
         },
         {
           "type": "RES",
@@ -1370,6 +1643,132 @@
       "area": "outbound",
       "name": ".RES.ful_1042.000001.rsl_00000000000000000000000000000001.erp1.tmp",
       "expect": "ignore"
+    },
+    {
+      "area": "outbound",
+      "name": "notes.txt",
+      "expect": "quarantine"
+    },
+    {
+      "area": "outbound",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "expect": "quarantine"
+    }
+  ],
+  "sequences": [
+    {
+      "name": "gaps, late, duplicate and conflicting results for one request",
+      "sent": [
+        {
+          "fulfillmentRequestId": "ful_1042",
+          "orderId": "ord_1042"
+        }
+      ],
+      "deliveries": [
+        [
+          "outbound/valid/ful_1042-r1-pending.erp1",
+          "apply"
+        ],
+        [
+          "outbound/valid/ful_1042-r4-shipped.erp1",
+          "apply"
+        ],
+        [
+          "outbound/valid/ful_1042-r2-held.erp1",
+          "late"
+        ],
+        [
+          "outbound/valid/ful_1042-r4-shipped.erp1",
+          "duplicate"
+        ],
+        [
+          "outbound/valid/ful_1042-r3-pending.erp1",
+          "late"
+        ],
+        [
+          "outbound/valid/ful_1042-r2-other-result-id.erp1",
+          "quarantine"
+        ],
+        [
+          "outbound/valid/ful_1042-r1-same-id-other-bytes.erp1",
+          "quarantine"
+        ],
+        [
+          "outbound/valid/ful_1042-r5-other-shipment.erp1",
+          "quarantine"
+        ],
+        [
+          "outbound/valid/ful_1042-r5-after-terminal.erp1",
+          "quarantine"
+        ],
+        [
+          "outbound/valid/ful_1042-r2-held.erp1",
+          "duplicate"
+        ]
+      ],
+      "final": {
+        "ful_1042": {
+          "status": "SHIPPED",
+          "revision": 4,
+          "shipmentId": "shp_0f0e0d0c0b0a09080706050403020100"
+        }
+      }
+    },
+    {
+      "name": "results that do not belong to a sent request",
+      "sent": [
+        {
+          "fulfillmentRequestId": "ful_1042",
+          "orderId": "ord_1042"
+        }
+      ],
+      "deliveries": [
+        [
+          "outbound/valid/ful_9999-r1-unknown-request.erp1",
+          "quarantine"
+        ],
+        [
+          "outbound/valid/ful_1042-r1-other-order.erp1",
+          "quarantine"
+        ],
+        [
+          "outbound/valid/ful_1042-r1-pending.erp1",
+          "apply"
+        ]
+      ],
+      "final": {
+        "ful_1042": {
+          "status": "PENDING",
+          "revision": 1,
+          "shipmentId": ""
+        }
+      }
+    },
+    {
+      "name": "terminal rejection arrives before the pending result",
+      "sent": [
+        {
+          "fulfillmentRequestId": "ful_2001",
+          "orderId": "ord_2001"
+        }
+      ],
+      "deliveries": [
+        [
+          "outbound/valid/ful_2001-r2-rejected.erp1",
+          "apply"
+        ],
+        [
+          "outbound/valid/ful_2001-r1-pending.erp1",
+          "late"
+        ]
+      ],
+      "final": {
+        "ful_2001": {
+          "status": "REJECTED",
+          "revision": 2,
+          "shipmentId": ""
+        }
+      }
     }
   ],
   "mapping": [

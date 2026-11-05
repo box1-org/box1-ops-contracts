@@ -15,6 +15,7 @@ const timestamp = v => {
   const m = TS.exec(v);
   if (!m) return false;
   const [y, mo, d, h, mi, s, ms] = m.slice(1).map(Number);
+  if (y < 1970 || s > 59) return false;
   const t = new Date(Date.UTC(y, mo - 1, d, h, mi, s, ms));
   return t.getUTCFullYear() === y && t.getUTCMonth() === mo - 1 && t.getUTCDate() === d && t.getUTCHours() === h && t.getUTCMinutes() === mi && t.getUTCSeconds() === s;
 };
@@ -25,7 +26,7 @@ const oneOf = list => v => list.includes(v);
 // [name, required, maxCodePoints, rule]. required may be a function of the record's earlier fields.
 const F = (name, required, max, rule) => ({ name, required, max, rule });
 const RECORDS = {
-  HDR: [F('magic', true, 8, null), F('fileType', true, 3, oneOf(['REQ', 'RES', 'ERR'])), F('createdAt', true, 24, timestamp)],
+  HDR: [F('magic', true, 0, null), F('fileType', true, 3, oneOf(['REQ', 'RES', 'ERR'])), F('createdAt', true, 24, timestamp)],
   REQ: [F('fulfillmentRequestId', true, 128, re(ID('ful'))), F('orderId', true, 128, re(ID('ord'))), F('reservationId', true, 128, re(ID('res'))),
     F('siteId', true, 128, re(ID('site', 123))), F('origin', true, 5, oneOf(['EVENT', 'API'])), F('requestedAt', true, 24, timestamp),
     F('correlationId', false, 128, text), F('traceparent', false, 55, re(TRACEPARENT))],
@@ -40,7 +41,11 @@ const RECORDS = {
   TRL: [F('recordCount', true, 3, re(/^[1-9][0-9]{0,2}$/))],
 };
 // Conditional fields (required as a function) must be empty when the condition is false.
-const BODY = { REQ: 'REQ', RES: 'RES', ERR: 'ERR' };
+const NAME = {
+  REQ: /^REQ\.ful_[A-Za-z0-9_-]{1,124}\.[0-9a-f]{8,32}\.erp1$/,
+  RES: /^RES\.ful_[A-Za-z0-9_-]{1,124}\.[0-9]{6}\.rsl_[0-9a-f]{32}\.erp1$/,
+  ERR: /^ERR\.err_[0-9a-f]{32}\.erp1$/,
+};
 
 class ProtocolError extends Error {
   constructor(code, detail) { super(`${code}: ${detail}`); this.code = code; }
@@ -72,12 +77,17 @@ export function parse(bytes, fileName) {
 }
 
 function parseOrThrow(bytes, fileName) {
+  const expectedType = ['REQ', 'RES', 'ERR'].find(t => NAME[t].test(fileName));
+  if (!expectedType) fail('FILENAME_MISMATCH', `not a ready name: ${fileName}`);
   if (bytes.length > MAX_FILE_BYTES) fail('FILE_TOO_LARGE', `${bytes.length} bytes`);
   if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) fail('ENCODING', 'byte-order mark');
   let content;
   try { content = new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch { fail('ENCODING', 'invalid UTF-8'); }
   if (CONTROL.test(content)) fail('ENCODING', 'control character');
   if (content.length === 0 || !content.endsWith('\n')) fail('TRUNCATED', 'missing final LF');
+  const version = /^HDR\|ERP([0-9]+)(\||\n)/.exec(content);
+  if (!version) fail('MALFORMED_RECORD', 'file does not start with HDR|ERP<n>');
+  if (version[1] !== '1') fail('UNSUPPORTED_VERSION', `ERP${version[1]}`);
 
   const lines = content.slice(0, -1).split('\n');
   const records = [];
@@ -94,7 +104,7 @@ function parseOrThrow(bytes, fileName) {
     const n = records.length;
     const allowed = done ? []
       : n === 0 ? ['HDR']
-      : n === 1 ? [BODY[fileType]]
+      : n === 1 ? [expectedType]
       : fileType === 'REQ' ? (lineCount === 0 ? ['LIN'] : lineCount < 99 ? ['LIN', 'TRL'] : ['TRL'])
       : ['TRL'];
     if (!allowed.includes(raw)) fail('RECORD_ORDER', `${raw} at record ${n + 1}`);
@@ -108,11 +118,10 @@ function parseOrThrow(bytes, fileName) {
         values[f.name] = '';
         return;
       }
-      if ([...v].length > f.max) fail('FIELD_LENGTH', `${raw}.${f.name}`);
+      if (f.max && [...v].length > f.max) fail('FIELD_LENGTH', `${raw}.${f.name}`);
       if (conditional && !required) fail('FIELD_VALUE', `${raw}.${f.name} must be empty`);
-      if (raw === 'HDR' && f.name === 'magic') {
-        if (v !== 'ERP1') fail(/^ERP[0-9]+$/.test(v) ? 'UNSUPPORTED_VERSION' : 'MALFORMED_RECORD', `magic ${v}`);
-      } else if (!f.rule(v)) fail('FIELD_VALUE', `${raw}.${f.name}`);
+      if (raw === 'HDR' && f.name === 'fileType' && v !== expectedType) fail('FIELD_VALUE', `HDR.fileType ${v} but name is ${expectedType}`);
+      if (f.rule && !f.rule(v)) fail('FIELD_VALUE', `${raw}.${f.name}`);
       values[f.name] = v;
     });
     if (raw === 'HDR') fileType = values.fileType;
@@ -162,12 +171,36 @@ export function requestFileFromEvent(event, createdAt) {
 }
 
 // File-name classification (SPEC section 4): 'ready', 'ignore' (in progress) or 'quarantine'/'unexpected'.
-const READY = {
-  inbound: [/^REQ\.ful_[A-Za-z0-9_-]{1,124}\.[0-9a-f]{8,32}\.erp1$/],
-  outbound: [/^RES\.ful_[A-Za-z0-9_-]{1,124}\.[0-9]{6}\.rsl_[0-9a-f]{32}\.erp1$/, /^ERR\.err_[0-9a-f]{32}\.erp1$/],
-};
+const READY = { inbound: [NAME.REQ], outbound: [NAME.RES, NAME.ERR] };
 export function classify(area, name) {
   if (name.startsWith('.') && name.endsWith('.tmp')) return 'ignore';
   if (READY[area].some(r => r.test(name))) return 'ready';
   return 'quarantine';
+}
+
+// Result consumer (SPEC section 7). Returns one outcome per delivery and the final state.
+export function consume(sent, deliveries) {
+  const requests = new Map(sent.map(r => [r.fulfillmentRequestId, { orderId: r.orderId, seen: [], applied: null }]));
+  const outcomes = deliveries.map(({ bytes, name }) => {
+    const p = parse(bytes, name);
+    if (!p.ok || p.fileType !== 'RES') return 'quarantine';
+    const r = p.records[1];
+    const req = requests.get(r.fulfillmentRequestId);
+    if (!req || r.orderId !== req.orderId) return 'quarantine';
+    const rev = Number(r.revision);
+    const key = Buffer.from(bytes).toString('base64');
+    const sameId = req.seen.find(s => s.resultId === r.resultId);
+    if (sameId) return sameId.key === key ? 'duplicate' : 'quarantine';
+    if (req.seen.some(s => s.revision === rev)) return 'quarantine';
+    if (r.status === 'SHIPPED' && req.seen.some(s => s.status === 'SHIPPED' && s.shipmentId !== r.shipmentId)) return 'quarantine';
+    const a = req.applied;
+    if (a && ['SHIPPED', 'REJECTED'].includes(a.status) && rev > a.revision) return 'quarantine';
+    const entry = { resultId: r.resultId, key, revision: rev, status: r.status, shipmentId: r.shipmentId };
+    req.seen.push(entry);
+    if (!a || rev > a.revision) { req.applied = entry; return 'apply'; }
+    return 'late';
+  });
+  const final = Object.fromEntries([...requests].filter(([, v]) => v.applied).map(([k, v]) =>
+    [k, { status: v.applied.status, revision: v.applied.revision, shipmentId: v.applied.shipmentId }]));
+  return { outcomes, final };
 }

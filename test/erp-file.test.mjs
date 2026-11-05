@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { parse, equivalent, classify, requestFileFromEvent, ERROR_CODES } from '../legacy/erp-file/v1/reference/erp1.mjs';
+import { parse, equivalent, classify, consume, requestFileFromEvent, ERROR_CODES } from '../legacy/erp-file/v1/reference/erp1.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const dir = path.join(root, 'legacy/erp-file/v1/fixtures');
@@ -62,5 +62,14 @@ test('fulfillment.requested.v1 maps to the expected request file without droppin
     const lin = result.records.filter(r => r.type === 'LIN');
     for (const k of ['orderId', 'reservationId', 'fulfillmentRequestId', 'siteId']) assert.equal(req[k], event.payload[k]);
     assert.deepEqual(lin.map(l => [l.sku, Number(l.quantity)]), [[event.payload.sku, event.payload.quantity]]);
+  }
+});
+
+test('result sequences: duplicates, late, gaps and conflicts', () => {
+  const names = Object.fromEntries(manifest.files.map(f => [f.file, f.name]));
+  for (const seq of manifest.sequences) {
+    const { outcomes, final } = consume(seq.sent, seq.deliveries.map(([file]) => ({ bytes: read(file), name: names[file] })));
+    assert.deepEqual(outcomes, seq.deliveries.map(([, outcome]) => outcome), seq.name);
+    assert.deepEqual(final, seq.final, seq.name);
   }
 });

@@ -6,17 +6,21 @@ The ERP has no HTTP, OpenAPI or Kafka interface. The adapter delivers one fulfil
 
 ## 1. Encoding and framing
 
+These rules hold for every version, so a reader can always find the version.
+
 - UTF-8 without a byte-order mark. Invalid UTF-8 is an error.
 - One record per line. Every record, including the last, ends with LF (`0x0A`). CR (`0x0D`) is not allowed anywhere.
 - No control characters (U+0000–U+001F except the LF terminator, U+007F–U+009F) anywhere in the file.
+- The first record starts with `HDR|ERP<n>` followed by `|` or the end of the line, where `<n>` is a decimal version. v1 is `ERP1`.
 - Fields are separated by `|`. Inside a field value, `\|` is a literal `|` and `\\` is a literal `\`. Any other `\` sequence, or a trailing lone `\`, is malformed. Writers escape every `|` and `\` in a value; no other characters are escaped.
 - Lengths are counted in Unicode code points after unescaping (as JSON Schema `maxLength` does). Implementations in UTF-16 languages must not use the UTF-16 length.
+- Values are compared exactly, code point by code point. Nobody applies Unicode normalization.
 - An empty field means "absent". Required fields must not be empty.
 - Maximum file size: 65,536 bytes.
 
 ## 2. Files and record order
 
-Every file is `HDR`, one body record, any `LIN` records the type allows, then `TRL`.
+Every file is `HDR`, one body record, any `LIN` records the type allows, then `TRL`. The file name decides the expected type (section 4).
 
 | Type | Written by | Records, in order |
 |---|---|---|
@@ -30,11 +34,11 @@ Field positions are 1-based after the record type. Every record has exactly the 
 
 **`HDR|<magic>|<fileType>|<createdAt>`**
 
-| # | Field | Rule |
-|---|---|---|
-| 1 | magic | `ERP1`. Another `ERP<n>` value is `UNSUPPORTED_VERSION`; anything else is `MALFORMED_RECORD` |
-| 2 | fileType | `REQ`, `RES` or `ERR` |
-| 3 | createdAt | timestamp |
+| # | Field | Req. | Max | Rule |
+|---|---|---|---|---|
+| 1 | magic | yes | — | `ERP1`; checked before anything else in the file (section 3, step 4) |
+| 2 | fileType | yes | 3 | the type the file name implies: `REQ`, `RES` or `ERR` |
+| 3 | createdAt | yes | 24 | timestamp |
 
 **`REQ|<fulfillmentRequestId>|<orderId>|<reservationId>|<siteId>|<origin>|<requestedAt>|<correlationId>|<traceparent>`**
 
@@ -78,29 +82,33 @@ Field positions are 1-based after the record type. Every record has exactly the 
 | # | Field | Req. | Max | Rule |
 |---|---|---|---|---|
 | 1 | errorId | yes | 36 | `^err_[0-9a-f]{32}$` |
-| 2 | inboundFileName | yes | 255 | the rejected file's name as received |
+| 2 | inboundFileName | yes | 255 | the rejected file's name, made writable (below) |
 | 3 | fulfillmentRequestId | no | 128 | as `REQ`, when it could be read from the file or its name |
 | 4 | errorCode | yes | 32 | an error code (section 5) |
 | 5 | detail | yes | 200 | human-readable; no request content beyond IDs |
 
+A received file name may not be valid in a record. The ERP decodes it as UTF-8 replacing invalid bytes with U+FFFD, replaces each control character with `?`, and keeps the first 255 code points.
+
 **`TRL|<recordCount>`**: total records in the file including `HDR` and `TRL`, `^[1-9][0-9]{0,2}$`.
 
-**Timestamps** are UTC, exactly `YYYY-MM-DDTHH:MM:SS.sssZ` (24 characters) and must be a real calendar time. Writers convert other offsets to UTC.
+**Timestamps** are UTC, exactly `YYYY-MM-DDTHH:MM:SS.sssZ` (24 characters), with a year from 1970 to 9999, seconds 00–59 (no leap second), and a real calendar date. Writers convert other offsets to UTC and truncate below milliseconds.
 
 ## 3. Validation order
 
 Readers stop at the first violation, in this order, so both implementations report the same code. Fixtures depend on it.
 
+0. The file name is not a ready name for any file type (section 4): `FILENAME_MISMATCH`. The name gives the expected file type.
 1. Size over 65,536 bytes: `FILE_TOO_LARGE`.
 2. Invalid UTF-8, a BOM, CR, or another control character: `ENCODING`.
 3. Empty file, or last byte not LF: `TRUNCATED`.
-4. Records in order. For each record:
+4. The first record does not start with `HDR|ERP<n>` followed by `|` or end of line: `MALFORMED_RECORD`. It does, but `<n>` is not `1`: `UNSUPPORTED_VERSION`.
+5. Records in order. For each record:
    1. unknown record type, wrong field count, an empty line, or a bad escape: `MALFORMED_RECORD`;
-   2. record type not allowed at this position for the file type named in `HDR` (for example a first record that is not `HDR`, `LIN` before `REQ`, a second `REQ`, `TRL` before the first `LIN`, a 100th `LIN`, anything after `TRL`): `RECORD_ORDER`;
-   3. fields left to right: empty required field `MISSING_FIELD`; longer than its maximum `FIELD_LENGTH`; otherwise not matching its rule `FIELD_VALUE` (this includes `HDR` magic and file type, `lineNo` out of sequence, and a non-empty conditional field that must be empty).
-5. End of file reached without `TRL`: `TRUNCATED`.
-6. `TRL` record count differs from the actual count: `COUNT_MISMATCH`.
-7. File name does not match the file's type and IDs (section 4): `FILENAME_MISMATCH`. For `REQ` the ID must match; for `RES` the ID, zero-padded revision and `resultId`; for `ERR` the `errorId`.
+   2. record type not allowed at this position for the expected file type (for example `LIN` before `REQ`, a second `REQ`, `TRL` before the first `LIN`, a 100th `LIN`, anything after `TRL`): `RECORD_ORDER`;
+   3. fields left to right: empty required field `MISSING_FIELD`; longer than its maximum `FIELD_LENGTH`; otherwise not matching its rule `FIELD_VALUE` (this includes an `HDR` file type that differs from the name's, `lineNo` out of sequence, and a non-empty conditional field that must be empty).
+6. End of file reached without `TRL`: `TRUNCATED`.
+7. `TRL` record count differs from the actual count: `COUNT_MISMATCH`.
+8. IDs in the name differ from the file's (`REQ`: the request ID; `RES`: request ID, zero-padded revision and `resultId`; `ERR`: `errorId`): `FILENAME_MISMATCH`.
 
 `CONFLICTING_REUSE` is decided by the ERP ledger after a request file is valid (section 6).
 
@@ -118,14 +126,16 @@ Areas on the exchange filesystem, all on one filesystem so a rename never copies
 | Area | Adapter | ERP |
 |---|---|---|
 | `inbound/` | uploads `.<name>.tmp`, renames to the ready name | reads ready names; moves each processed file out of the exchange to its private archive or quarantine |
-| `outbound/` | reads ready names; after committing the result, renames it into `consumed/` | writes `.<name>.tmp`, renames to the ready name |
+| `outbound/` | reads ready names; after committing (or quarantining) a file on its side, renames it to `consumed/<name>.<nonce>`, nonce `[0-9a-f]{8,32}` | writes `.<name>.tmp`, renames to the ready name |
 | `consumed/` | owns; may delete after its own retention | may purge files older than 7 days |
 
-The ERP's archive and quarantine are private to the appliance and are not reachable over SFTP. Every quarantined file produces an `ERR` file. The SFTP account cannot reach the ERP database.
+The per-move nonce in `consumed/` means a re-emitted result with the same name never collides with an earlier copy, so plain SFTP rename works.
+
+In `inbound/`, a file that is neither a ready `REQ` name nor a `.tmp` name is quarantined with `FILENAME_MISMATCH` without being parsed. In `outbound/`, a file that is neither a ready `RES` or `ERR` name nor a `.tmp` name is unexpected: the adapter quarantines it on its side and moves it to `consumed/` like any other file. The ERP's archive and quarantine are private to the appliance and are not reachable over SFTP. Every quarantined inbound file produces an `ERR` file. The SFTP account cannot reach the ERP database.
+
+**Commit order.** The ERP commits a request (or its quarantine record and `ERR` intent) to its ledger before it moves the inbound file out of the exchange. A crash in between re-reads the file, which deduplicates (section 6). The adapter commits a result on its side before moving it to `consumed/`. Either side may deliver again at any time: the adapter may resend an equivalent request under a new nonce to recover a lost upload.
 
 **Visibility versus durability.** A rename makes a complete file visible atomically; it does not make it durable. The ERP writes a file, `fsync`s it, renames it, then `fsync`s the directory, and only then records it as published. A crash before that point republishes the same name and bytes after restart. SFTP writers cannot `fsync`; readers rely on the `TRL` count to detect a truncated file.
-
-In `inbound/`, a file that is neither a ready `REQ` name nor a `.tmp` name is quarantined with `FILENAME_MISMATCH`. In `outbound/`, a file that is neither a ready `RES` or `ERR` name nor a `.tmp` name is unexpected; the adapter quarantines it on its side and does not apply it.
 
 ## 5. Codes
 
@@ -133,7 +143,7 @@ In `inbound/`, a file that is neither a ready `REQ` name nor a `.tmp` name is qu
 
 **Rejection reason codes.** `STOCK_UNAVAILABLE`, `SITE_UNAVAILABLE`, `DAMAGED_GOODS`, `OPERATOR_CANCELLED`, `OTHER`. `reasonText` is operator free text for troubleshooting and must not be copied into events.
 
-**Error codes.** `FILE_TOO_LARGE`, `ENCODING`, `TRUNCATED`, `MALFORMED_RECORD`, `UNSUPPORTED_VERSION`, `RECORD_ORDER`, `MISSING_FIELD`, `FIELD_LENGTH`, `FIELD_VALUE`, `COUNT_MISMATCH`, `FILENAME_MISMATCH`, `CONFLICTING_REUSE`. An error file means the ERP did not accept that file. It does not change any request's state; the adapter decides whether to fix and resend.
+**Error codes** (in `ERR` files). `FILE_TOO_LARGE`, `ENCODING`, `TRUNCATED`, `MALFORMED_RECORD`, `UNSUPPORTED_VERSION`, `RECORD_ORDER`, `MISSING_FIELD`, `FIELD_LENGTH`, `FIELD_VALUE`, `COUNT_MISMATCH`, `FILENAME_MISMATCH`, `CONFLICTING_REUSE`. An error file means the ERP did not accept that file. It does not change any request's state; the adapter decides whether to fix and resend.
 
 ## 6. Request identity and equivalence
 
@@ -145,10 +155,28 @@ In `inbound/`, a file that is neither a ready `REQ` name nor a `.tmp` name is qu
 
 ## 7. Results: identity, revisions and ordering
 
-- Each business-state change creates one result with the next revision (1, 2, 3…) and a new random `resultId`. `SHIPPED` and `REJECTED` are terminal, so they are always the last revision.
+What the ERP guarantees:
+
+- Each business-state change creates one result with the next revision (1, 2, 3…) and a new random `resultId`. `SHIPPED` and `REJECTED` are terminal, so nothing follows them.
 - A result's bytes are fixed when it is created. Re-emitting a result publishes the same name and the same bytes; it never creates a new revision or shipment.
-- Files may arrive in any order and more than once. Consumers deduplicate by `resultId` and order by `revision`, never by file name, timestamp or arrival. A revision not higher than the one already applied must not change state.
 - At most one shipment exists per `fulfillmentRequestId`, so every `SHIPPED` result for a request carries the same `shipmentId`.
+- Files may arrive in any order, more than once, and with gaps in revisions (an earlier revision may arrive later, or not at all, if the consumer acted on a later one first).
+
+What a consumer does with a valid result file, per request. It keeps the `(revision, resultId, bytes)` of every result it has seen. Rows are checked top to bottom; the first match decides.
+
+| Case | Outcome |
+|---|---|
+| Request ID the consumer never sent | `quarantine` |
+| `orderId` different from the request's | `quarantine` |
+| Same `resultId` and same bytes as one already seen | `duplicate`: no change |
+| Same `resultId` as one already seen, different bytes | `quarantine` |
+| Same revision as one already seen, different `resultId` | `quarantine` |
+| `SHIPPED` with a `shipmentId` different from a `SHIPPED` already seen | `quarantine` |
+| A revision higher than an applied terminal (`SHIPPED`/`REJECTED`) revision | `quarantine` |
+| Revision higher than the highest applied | `apply` |
+| Otherwise (a lower revision) | `late`: recorded, no state change; never regresses state |
+
+A quarantined result is recorded with its reason and not applied. [`fixtures/manifest.json`](fixtures/manifest.json) `sequences` gives these cases as ordered deliveries with their expected outcomes and final state.
 
 ## 8. Mapping from `fulfillment.requested.v1`
 
@@ -156,18 +184,25 @@ In `inbound/`, a file that is neither a ready `REQ` name nor a `.tmp` name is qu
 |---|---|
 | `REQ.fulfillmentRequestId`, `orderId`, `reservationId`, `siteId` | payload fields of the same names |
 | `REQ.origin` | `EVENT` |
-| `REQ.requestedAt` | envelope `occurredAt`, in UTC with milliseconds |
+| `REQ.requestedAt` | envelope `occurredAt`, in UTC, truncated to milliseconds |
 | `REQ.correlationId`, `REQ.traceparent` | envelope fields of the same names |
 | one `LIN` with `lineNo` 1 | payload `sku`, `quantity` |
 
-No v1 payload field is dropped. A value the protocol cannot carry (for example a quantity over 999,999,999 or a control character in `sku`) must be rejected by the adapter explicitly, not truncated. [`fixtures/mapping/`](fixtures/mapping/) holds the expected file for the `fulfillment.requested.v1` event in [`../../../fixtures/events.json`](../../../fixtures/events.json).
+No v1 payload field is dropped. A value the protocol cannot carry (for example a quantity over 999,999,999 or a control character in `sku`) must be rejected by the adapter explicitly, not truncated. The manifest's `mapping` entry gives the exact expected file for the `fulfillment.requested.v1` event in [`../../../fixtures/events.json`](../../../fixtures/events.json).
 
-## 9. Fixtures
+## 9. Implementation notes
+
+- **Camel Bindy alone cannot read ERP1.** Bindy's CSV support splits on a separator with quoting, not backslash escapes; it maps one class per line; and Java `String.length()` counts UTF-16 units. The adapter needs its own framing step (a custom `DataFormat` or a tokenizer before Bindy) that applies sections 1 and 3: escaping, code-point lengths and the validation order. Bindy, if used, then maps already-split, unescaped records by type.
+- Neither side reads the other's private areas: the ERP never reads `consumed/`; the adapter never sees the ERP's archive, quarantine or database.
+
+## 10. Fixtures
 
 [`fixtures/manifest.json`](fixtures/manifest.json) lists every fixture with its expected outcome:
 
 - `files`: a fixture file and, if valid, its parsed records with unescaped values; if invalid, the expected error code. Each is checked under the file name given.
 - `equivalence`: pairs of valid request fixtures and whether they are equivalent.
+- `names`: file names in `inbound/` and `outbound/` and whether each is `ready`, `ignore` (in progress) or `quarantine`.
+- `sequences`: result deliveries in order, each with its expected outcome (`apply`, `duplicate`, `late`, `quarantine`), and the final status and shipment.
 - `mapping`: an event, the `createdAt` to use, and the exact expected request file.
 
-`npm test` checks the fixtures with a reference parser ([`reference/erp1.mjs`](reference/erp1.mjs)) that exists only to keep this specification and its fixtures consistent. Services implement their own reader and writer.
+`npm test` checks the fixtures with a reference reader ([`reference/erp1.mjs`](reference/erp1.mjs)) that exists only to keep this specification and its fixtures consistent. Services implement their own reader and writer.
