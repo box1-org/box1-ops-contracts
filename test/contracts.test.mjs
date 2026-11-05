@@ -6,7 +6,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const schemaDir = path.join(root, 'events/v1');
 const schema = name => JSON.parse(fs.readFileSync(path.join(schemaDir, name), 'utf8'));
 test('v1 payload schemas retain required fields and types', () => {
-  for (const name of ['order.placed.schema.json','inventory.reserved.schema.json','fulfillment.requested.schema.json','shipment.confirmed.schema.json','equipment.reading.schema.json']) {
+  for (const name of ['order.placed.schema.json','inventory.reserved.schema.json','fulfillment.requested.schema.json','shipment.confirmed.schema.json','equipment.reading.schema.json','inventory.rejected.schema.json','inventory.reservation-expired.schema.json','shipment.failed.schema.json','order.state-changed.schema.json']) {
     const value = schema(name);
     assert.ok(value.required.length > 0, name);
     for (const key of value.required) assert.ok(value.properties[key], `${name}: missing ${key}`);

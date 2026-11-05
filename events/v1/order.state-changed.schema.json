@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/order.state-changed.schema.json",
+  "title": "OrderStateChanged payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "orderId",
+    "fromState",
+    "toState",
+    "reasonCode",
+    "changedAt"
+  ],
+  "properties": {
+    "orderId": {
+      "type": "string",
+      "pattern": "^ord_[A-Za-z0-9_-]+$"
+    },
+    "fromState": {
+      "type": "string",
+      "enum": [
+        "SUBMITTED",
+        "RESERVED",
+        "FULFILLMENT_REQUESTED",
+        "SHIPPED",
+        "COMPLETED",
+        "REJECTED",
+        "EXCEPTION",
+        "CANCELLED"
+      ]
+    },
+    "toState": {
+      "type": "string",
+      "enum": [
+        "SUBMITTED",
+        "RESERVED",
+        "FULFILLMENT_REQUESTED",
+        "SHIPPED",
+        "COMPLETED",
+        "REJECTED",
+        "EXCEPTION",
+        "CANCELLED"
+      ]
+    },
+    "reasonCode": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$",
+      "maxLength": 64
+    },
+    "changedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
