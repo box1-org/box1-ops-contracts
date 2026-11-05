@@ -1,0 +1,237 @@
+openapi: 3.1.0
+info:
+  title: Box1 Telemetry (asset-service) API
+  version: 1.0.0
+  description: >
+    Telemetry ingestion and reads for box1-org/asset-service. Every operation needs a bearer token from
+    Keycloak realm box1 with audience asset-service; ingestion also needs client role telemetry-writer.
+    The service's console API (/api/v1/control) is not part of this contract. See TELEMETRY.md.
+servers:
+  - url: https://asset-service-dev.apps.ocp.box1.org
+security:
+  - bearer: []
+paths:
+  /api/v1/telemetry/readings:
+    post:
+      operationId: ingestReading
+      security: [{ bearer: [telemetry-writer] }]
+      parameters:
+        - in: header
+          name: X-Correlation-ID
+          schema: { type: string, pattern: '^[A-Za-z0-9:_.-]{1,128}$' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReadingInput' }
+            example: { $ref: '#/components/examples/Reading/value' }
+      responses:
+        '202':
+          description: Published to Kafka (acknowledged by the broker)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Accepted' }
+              example:
+                eventId: 55555555-5555-4555-8555-555555555555
+                status: PUBLISHED
+                traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { description: No valid token }
+        '403': { description: Token lacks telemetry-writer }
+        '413': { $ref: '#/components/responses/Problem' }
+        '429': { $ref: '#/components/responses/Problem' }
+        '503': { $ref: '#/components/responses/Problem' }
+  /api/v1/assets/{assetId}/readings:
+    get:
+      operationId: listReadings
+      parameters:
+        - in: path
+          name: assetId
+          required: true
+          schema: { $ref: '#/components/schemas/AssetId' }
+        - in: query
+          name: from
+          description: Inclusive. Defaults to one hour before `to`.
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          description: Exclusive. Defaults to now. The window is at most 24 hours.
+          schema: { type: string, format: date-time }
+        - in: query
+          name: metric
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+        - in: query
+          name: cursor
+          description: Opaque; the previous page's nextCursor.
+          schema: { type: string }
+      responses:
+        '200':
+          description: Readings ordered by measuredAt, then metricName
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/StoredReading' }
+                  nextCursor: { type: [string, 'null'] }
+              example:
+                items:
+                  - assetId: asset_press_7
+                    siteId: site_nyc
+                    metricName: temperature
+                    measuredAt: '2026-10-25T12:30:00Z'
+                    value: 22.4
+                    unit: C
+                    sourceEventId: 55555555-5555-4555-8555-555555555555
+                    traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+                nextCursor: null
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { description: No valid token }
+  /api/v1/alerts:
+    get:
+      operationId: listAlerts
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [ACTIVE, CLEARED] }
+        - in: query
+          name: assetId
+          schema: { $ref: '#/components/schemas/AssetId' }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200':
+          description: Alert episodes, newest first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Alert' }
+                  nextCursor: { type: [string, 'null'] }
+              example:
+                items:
+                  - alertId: alt_press_7_temp_1
+                    assetId: asset_press_7
+                    siteId: site_nyc
+                    metricName: temperature
+                    unit: C
+                    status: CLEARED
+                    severity: CRITICAL
+                    threshold: 95
+                    firstValue: 96.5
+                    peakValue: 97.1
+                    lastValue: 70.2
+                    readingCount: 14
+                    activatedAt: '2026-10-25T12:31:05Z'
+                    activatedMeasuredAt: '2026-10-25T12:31:04Z'
+                    escalatedAt: null
+                    clearedAt: '2026-10-25T12:35:10Z'
+                    sourceEventId: 55555555-5555-4555-8555-555555555555
+                    eventId: aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+                    traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+                nextCursor: null
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { description: No valid token }
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+  examples:
+    Reading:
+      value:
+        assetId: asset_press_7
+        siteId: site_nyc
+        metricName: temperature
+        measuredAt: '2026-10-25T12:30:00Z'
+        value: 72.4
+        unit: F
+  responses:
+    Problem:
+      description: RFC 9457 problem with a stable code
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: https://box1.org/problems/invalid-unit
+            title: Invalid reading
+            status: 400
+            detail: unit furlong is not accepted for temperature
+            code: INVALID_UNIT
+  schemas:
+    AssetId: { type: string, pattern: '^asset_[A-Za-z0-9_-]{1,64}$' }
+    SiteId: { type: string, pattern: '^site_[A-Za-z0-9_-]{1,64}$' }
+    ReadingInput:
+      type: object
+      additionalProperties: false
+      required: [assetId, siteId, metricName, measuredAt, value, unit]
+      properties:
+        assetId: { $ref: '#/components/schemas/AssetId' }
+        siteId: { $ref: '#/components/schemas/SiteId' }
+        metricName: { type: string, enum: [temperature, vibration, pressure, power] }
+        measuredAt: { type: string, format: date-time }
+        value: { type: number }
+        unit: { type: string, enum: [C, F, mm/s, bar, kW] }
+    Accepted:
+      type: object
+      required: [eventId, status]
+      properties:
+        eventId: { type: string, format: uuid }
+        status: { type: string, enum: [PUBLISHED] }
+        traceparent: { type: string }
+    StoredReading:
+      type: object
+      required: [assetId, siteId, metricName, measuredAt, value, unit, sourceEventId]
+      properties:
+        assetId: { $ref: '#/components/schemas/AssetId' }
+        siteId: { $ref: '#/components/schemas/SiteId' }
+        metricName: { type: string }
+        measuredAt: { type: string, format: date-time }
+        value: { type: number, description: In the metric's canonical unit }
+        unit: { type: string }
+        sourceEventId: { type: string, format: uuid }
+        traceparent: { type: [string, 'null'] }
+    Alert:
+      type: object
+      required: [alertId, assetId, siteId, metricName, status, severity, threshold, activatedAt, sourceEventId, eventId]
+      properties:
+        alertId: { type: string, pattern: '^alt_[A-Za-z0-9_-]+$' }
+        assetId: { $ref: '#/components/schemas/AssetId' }
+        siteId: { $ref: '#/components/schemas/SiteId' }
+        metricName: { type: string }
+        unit: { type: string }
+        status: { type: string, enum: [ACTIVE, CLEARED] }
+        severity: { type: string, enum: [WARNING, CRITICAL] }
+        threshold: { type: number }
+        firstValue: { type: number }
+        peakValue: { type: number }
+        lastValue: { type: number }
+        readingCount: { type: integer, minimum: 1 }
+        activatedAt: { type: string, format: date-time }
+        activatedMeasuredAt: { type: string, format: date-time }
+        escalatedAt: { type: [string, 'null'], format: date-time }
+        clearedAt: { type: [string, 'null'], format: date-time }
+        sourceEventId: { type: string, format: uuid, description: The reading that activated the alert }
+        eventId: { type: string, format: uuid, description: The equipment.threshold-exceeded.v1 event }
+        traceparent: { type: [string, 'null'] }
+    Problem:
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code: { type: string }
