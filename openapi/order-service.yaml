@@ -158,20 +158,20 @@ components:
       additionalProperties: false
       required: [customerId, sku, quantity, siteId]
       properties:
-        customerId: { type: string, pattern: '^cust_[A-Za-z0-9_-]+$' }
-        sku: { type: string, minLength: 1, maxLength: 80 }
+        customerId: { type: string, pattern: '^cust_[A-Za-z0-9_-]+$', maxLength: 64 }
+        sku: { type: string, minLength: 1, maxLength: 80, pattern: '^[^\x00-\x1F\x7F]+$' }
         quantity: { type: integer, minimum: 1 }
-        siteId: { type: string, pattern: '^site_[A-Za-z0-9_-]+$' }
+        siteId: { type: string, pattern: '^site_[A-Za-z0-9_-]+$', maxLength: 64 }
     Order:
       type: object
       required: [orderId, state, customerId, sku, quantity, siteId]
       properties:
         orderId: { type: string, pattern: '^ord_[A-Za-z0-9_-]+$' }
         state: { $ref: '#/components/schemas/OrderState' }
-        customerId: { type: string, pattern: '^cust_[A-Za-z0-9_-]+$' }
-        sku: { type: string, minLength: 1, maxLength: 80 }
+        customerId: { type: string, pattern: '^cust_[A-Za-z0-9_-]+$', maxLength: 64 }
+        sku: { type: string, minLength: 1, maxLength: 80, pattern: '^[^\x00-\x1F\x7F]+$' }
         quantity: { type: integer, minimum: 1 }
-        siteId: { type: string, pattern: '^site_[A-Za-z0-9_-]+$' }
+        siteId: { type: string, pattern: '^site_[A-Za-z0-9_-]+$', maxLength: 64 }
         reservationId: { type: string, pattern: '^res_[A-Za-z0-9_-]+$' }
         statusReason: { type: string }
         createdAt: { type: string, format: date-time }

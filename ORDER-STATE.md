@@ -4,7 +4,9 @@ The Order service owns this table. Other services read order state through event
 
 | From | Event | Result |
 |---|---|---|
-| `SUBMITTED` | `inventory.reserved.v1` | `RESERVED`, then `FULFILLMENT_REQUESTED`; `fulfillment.requested.v1` enqueued in the same transaction |
+| `SUBMITTED` | `inventory.reserved.v1` matching the order's `sku`, `quantity` and `siteId`, not past `expiresAt` | `RESERVED`, then `FULFILLMENT_REQUESTED`; `fulfillment.requested.v1` enqueued in the same transaction |
+| `SUBMITTED` | `inventory.reserved.v1` that differs from the order | `EXCEPTION`, reason `RESERVATION_MISMATCH` |
+| `SUBMITTED` | `inventory.reserved.v1` past `expiresAt` | `EXCEPTION`, reason `RESERVATION_EXPIRED` |
 | `SUBMITTED` | `inventory.rejected.v1` | `REJECTED` |
 | `SUBMITTED` | `shipment.confirmed.v1` | `EXCEPTION`, reason `SHIPMENT_BEFORE_RESERVATION` |
 | `FULFILLMENT_REQUESTED` | `shipment.confirmed.v1` | `SHIPPED`, then `COMPLETED` if the completion policy allows |
