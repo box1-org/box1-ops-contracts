@@ -33,9 +33,9 @@ for (const fx of manifest.files) {
   });
 }
 
-test('every error code except CONFLICTING_REUSE has an invalid fixture', () => {
+test('every error code except CONFLICTING_REUSE and UNREADABLE has an invalid fixture', () => {
   const covered = new Set(manifest.files.filter(f => !f.valid).map(f => f.errorCode));
-  for (const code of ERROR_CODES.filter(c => c !== 'CONFLICTING_REUSE')) assert.ok(covered.has(code), code);
+  for (const code of ERROR_CODES.filter(c => !['CONFLICTING_REUSE', 'UNREADABLE'].includes(c))) assert.ok(covered.has(code), code);
 });
 
 test('equivalence pairs', () => {

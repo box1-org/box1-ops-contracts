@@ -8,7 +8,7 @@ const ID = (prefix, max = 124) => new RegExp(`^${prefix}_[A-Za-z0-9_-]{1,${max}}
 const TS = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$/;
 const TRACEPARENT = /^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$/;
 const REJECTION_CODES = ['STOCK_UNAVAILABLE', 'SITE_UNAVAILABLE', 'DAMAGED_GOODS', 'OPERATOR_CANCELLED', 'OTHER'];
-export const ERROR_CODES = ['FILE_TOO_LARGE', 'ENCODING', 'TRUNCATED', 'MALFORMED_RECORD', 'UNSUPPORTED_VERSION', 'RECORD_ORDER',
+export const ERROR_CODES = ['UNREADABLE', 'FILE_TOO_LARGE', 'ENCODING', 'TRUNCATED', 'MALFORMED_RECORD', 'UNSUPPORTED_VERSION', 'RECORD_ORDER',
   'MISSING_FIELD', 'FIELD_LENGTH', 'FIELD_VALUE', 'COUNT_MISMATCH', 'FILENAME_MISMATCH', 'CONFLICTING_REUSE'];
 
 const timestamp = v => {

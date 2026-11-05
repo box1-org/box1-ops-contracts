@@ -97,7 +97,7 @@ A received file name may not be valid in a record. The ERP decodes it as UTF-8 r
 
 Readers stop at the first violation, in this order, so both implementations report the same code. Fixtures depend on it.
 
-0. The file name is not a ready name for any file type (section 4): `FILENAME_MISMATCH`. The name gives the expected file type.
+0. The entry is not a regular file the reader can open without following a link: `UNREADABLE`. Then: the file name is not a ready name for any file type (section 4): `FILENAME_MISMATCH`. The name gives the expected file type.
 1. Size over 65,536 bytes: `FILE_TOO_LARGE`.
 2. Invalid UTF-8, a BOM, CR, or another control character: `ENCODING`.
 3. Empty file, or last byte not LF: `TRUNCATED`.
@@ -131,7 +131,7 @@ Areas on the exchange filesystem, all on one filesystem so a rename never copies
 
 The per-move nonce in `consumed/` means a re-emitted result with the same name never collides with an earlier copy, so plain SFTP rename works.
 
-In `inbound/`, a file that is neither a ready `REQ` name nor a `.tmp` name is quarantined with `FILENAME_MISMATCH` without being parsed. In `outbound/`, a file that is neither a ready `RES` or `ERR` name nor a `.tmp` name is unexpected: the adapter quarantines it on its side and moves it to `consumed/` like any other file. The ERP's archive and quarantine are private to the appliance and are not reachable over SFTP. Every quarantined inbound file produces an `ERR` file. The SFTP account cannot reach the ERP database.
+In `inbound/`, a file that is neither a ready `REQ` name nor a `.tmp` name is quarantined with `FILENAME_MISMATCH` without being parsed. An entry the ERP cannot read as a regular file (a directory, a symbolic link, a device, or a file it lacks permission to read) is moved to quarantine unopened with `UNREADABLE`; the ERP never follows a link. Every quarantined upload gets its own `ERR` file, even when an earlier upload had the same name and bytes. In `outbound/`, a file that is neither a ready `RES` or `ERR` name nor a `.tmp` name is unexpected: the adapter quarantines it on its side and moves it to `consumed/` like any other file. The ERP's archive and quarantine are private to the appliance and are not reachable over SFTP. Every quarantined inbound file produces an `ERR` file. The SFTP account cannot reach the ERP database.
 
 **Commit order.** The ERP commits a request (or its quarantine record and `ERR` intent) to its ledger before it moves the inbound file out of the exchange. A crash in between re-reads the file, which deduplicates (section 6). The adapter commits a result on its side before moving it to `consumed/`. Either side may deliver again at any time: the adapter may resend an equivalent request under a new nonce to recover a lost upload.
 
@@ -143,7 +143,7 @@ In `inbound/`, a file that is neither a ready `REQ` name nor a `.tmp` name is qu
 
 **Rejection reason codes.** `STOCK_UNAVAILABLE`, `SITE_UNAVAILABLE`, `DAMAGED_GOODS`, `OPERATOR_CANCELLED`, `OTHER`. `reasonText` is operator free text for troubleshooting and must not be copied into events.
 
-**Error codes** (in `ERR` files). `FILE_TOO_LARGE`, `ENCODING`, `TRUNCATED`, `MALFORMED_RECORD`, `UNSUPPORTED_VERSION`, `RECORD_ORDER`, `MISSING_FIELD`, `FIELD_LENGTH`, `FIELD_VALUE`, `COUNT_MISMATCH`, `FILENAME_MISMATCH`, `CONFLICTING_REUSE`. An error file means the ERP did not accept that file. It does not change any request's state; the adapter decides whether to fix and resend.
+**Error codes** (in `ERR` files). `UNREADABLE` (not a regular file, or the ERP lacks permission to read it), `FILE_TOO_LARGE`, `ENCODING`, `TRUNCATED`, `MALFORMED_RECORD`, `UNSUPPORTED_VERSION`, `RECORD_ORDER`, `MISSING_FIELD`, `FIELD_LENGTH`, `FIELD_VALUE`, `COUNT_MISMATCH`, `FILENAME_MISMATCH`, `CONFLICTING_REUSE`. An error file means the ERP did not accept that file. It does not change any request's state; the adapter decides whether to fix and resend.
 
 ## 6. Request identity and equivalence
 
