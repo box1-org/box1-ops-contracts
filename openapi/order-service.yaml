@@ -95,7 +95,7 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/TimelineEntry' }
               example:
-                - sequence: 1
+                - sequence: 1042
                   kind: TRANSITION
                   toState: SUBMITTED
                   reasonCode: ORDER_PLACED
@@ -185,7 +185,12 @@ components:
       type: object
       required: [sequence, kind, reasonCode, occurredAt]
       properties:
-        sequence: { type: integer, minimum: 1 }
+        sequence:
+          type: integer
+          minimum: 1
+          description: >-
+            Increases across all orders, so an order's first entry may not be 1 and its entries
+            may have gaps. Use it to order entries, not to count them.
         kind: { type: string, enum: [TRANSITION, NOTE] }
         fromState: { $ref: '#/components/schemas/OrderState' }
         toState: { $ref: '#/components/schemas/OrderState' }
