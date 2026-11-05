@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Box1 Order Service API
-  version: 1.0.0
+  version: 1.1.0
 paths:
   /api/v1/orders:
     post:
@@ -10,47 +10,148 @@ paths:
         - in: header
           name: Idempotency-Key
           required: true
-          schema: { type: string, minLength: 1 }
+          schema: { type: string, minLength: 1, maxLength: 255 }
+        - $ref: '#/components/parameters/ConsumerId'
+        - $ref: '#/components/parameters/CorrelationId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateOrder'
+            example: { customerId: cust_demo_1, sku: SKU-42, quantity: 2, siteId: site_nyc }
       responses:
         '201':
           description: Created
+          headers:
+            Location:
+              required: true
+              schema: { type: string, format: uri-reference }
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Order' }
-        '409': { description: Idempotency key reused with another payload }
+              example: { $ref: '#/components/examples/SubmittedOrder/value' }
+        '200':
+          description: Idempotent replay of the same key and payload; returns the original order
+          headers:
+            Location:
+              required: true
+              schema: { type: string, format: uri-reference }
+            Idempotency-Replayed:
+              required: true
+              schema: { type: string, const: 'true' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+              example: { $ref: '#/components/examples/SubmittedOrder/value' }
+        '409': { $ref: '#/components/responses/Problem' }
         '400': { $ref: '#/components/responses/Problem' }
     get:
       operationId: listOrders
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
       responses:
         '200':
-          description: Orders
+          description: Orders, newest first. A `Link` header with `rel="next"` is present when more results exist.
+          headers:
+            Link:
+              schema: { type: string }
           content:
             application/json:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/Order' }
+        '400': { $ref: '#/components/responses/Problem' }
   /api/v1/orders/{orderId}:
     get:
       operationId: getOrder
       parameters:
-        - in: path
-          name: orderId
-          required: true
-          schema: { type: string }
+        - $ref: '#/components/parameters/OrderId'
       responses:
         '200':
           description: Order
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Order' }
-        '404': { description: Not found }
+              example: { $ref: '#/components/examples/SubmittedOrder/value' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/orders/{orderId}/timeline:
+    get:
+      operationId: getOrderTimeline
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Timeline entries, oldest first. A `Link` header with `rel="next"` is present when more results exist.
+          headers:
+            Link:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TimelineEntry' }
+              example:
+                - sequence: 1
+                  kind: TRANSITION
+                  toState: SUBMITTED
+                  reasonCode: ORDER_PLACED
+                  occurredAt: '2026-10-25T12:30:00Z'
+                  causationId: cmd_1042
+                  correlationId: corr-1042
+                  traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+        '404': { $ref: '#/components/responses/Problem' }
+        '400': { $ref: '#/components/responses/Problem' }
 components:
+  parameters:
+    OrderId:
+      in: path
+      name: orderId
+      required: true
+      schema: { type: string, pattern: '^ord_[A-Za-z0-9_-]+$' }
+    Limit:
+      in: query
+      name: limit
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Cursor:
+      in: query
+      name: cursor
+      description: Opaque value from a previous response's `Link` header
+      schema: { type: string, maxLength: 64 }
+    ConsumerId:
+      in: header
+      name: X-Consumer-Id
+      description: Idempotency scope. Caller-supplied and not an authenticated identity; defaults to `anonymous`.
+      schema: { type: string, pattern: '^[A-Za-z0-9_.-]{1,64}$' }
+    CorrelationId:
+      in: header
+      name: X-Correlation-Id
+      description: Correlation ID to propagate. Generated when absent or invalid.
+      schema: { type: string, pattern: '^[A-Za-z0-9_.:-]{1,128}$' }
+  responses:
+    Problem:
+      description: RFC 9457 problem
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { type: 'about:blank', title: Not Found, status: 404, detail: Order not found }
+  examples:
+    SubmittedOrder:
+      value:
+        orderId: ord_1042
+        state: SUBMITTED
+        customerId: cust_demo_1
+        sku: SKU-42
+        quantity: 2
+        siteId: site_nyc
+        statusReason: ORDER_PLACED
+        createdAt: '2026-10-25T12:30:00Z'
+        updatedAt: '2026-10-25T12:30:00Z'
+        correlationId: corr-1042
+        traceId: 4bf92f3577b34da6a3ce929d0e0e4736
   schemas:
     CreateOrder:
       type: object
@@ -58,17 +159,43 @@ components:
       required: [customerId, sku, quantity, siteId]
       properties:
         customerId: { type: string, pattern: '^cust_[A-Za-z0-9_-]+$' }
-        sku: { type: string, minLength: 1 }
+        sku: { type: string, minLength: 1, maxLength: 80 }
         quantity: { type: integer, minimum: 1 }
         siteId: { type: string, pattern: '^site_[A-Za-z0-9_-]+$' }
     Order:
-      allOf:
-        - $ref: '#/components/schemas/CreateOrder'
-        - type: object
-          required: [orderId, state]
-          properties:
-            orderId: { type: string, pattern: '^ord_[A-Za-z0-9_-]+$' }
-            state: { type: string, enum: [SUBMITTED, RESERVED, FULFILLMENT_REQUESTED, SHIPPED, COMPLETED, REJECTED, EXCEPTION, CANCELLED] }
+      type: object
+      required: [orderId, state, customerId, sku, quantity, siteId]
+      properties:
+        orderId: { type: string, pattern: '^ord_[A-Za-z0-9_-]+$' }
+        state: { $ref: '#/components/schemas/OrderState' }
+        customerId: { type: string, pattern: '^cust_[A-Za-z0-9_-]+$' }
+        sku: { type: string, minLength: 1, maxLength: 80 }
+        quantity: { type: integer, minimum: 1 }
+        siteId: { type: string, pattern: '^site_[A-Za-z0-9_-]+$' }
+        reservationId: { type: string, pattern: '^res_[A-Za-z0-9_-]+$' }
+        statusReason: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        correlationId: { type: string }
+        traceId: { type: string, pattern: '^[0-9a-f]{32}$' }
+    OrderState:
+      type: string
+      enum: [SUBMITTED, RESERVED, FULFILLMENT_REQUESTED, SHIPPED, COMPLETED, REJECTED, EXCEPTION, CANCELLED]
+    TimelineEntry:
+      type: object
+      required: [sequence, kind, reasonCode, occurredAt]
+      properties:
+        sequence: { type: integer, minimum: 1 }
+        kind: { type: string, enum: [TRANSITION, NOTE] }
+        fromState: { $ref: '#/components/schemas/OrderState' }
+        toState: { $ref: '#/components/schemas/OrderState' }
+        reasonCode: { type: string }
+        occurredAt: { type: string, format: date-time }
+        eventId: { type: string, format: uuid }
+        eventType: { type: string }
+        causationId: { type: string }
+        correlationId: { type: string }
+        traceId: { type: string, pattern: '^[0-9a-f]{32}$' }
     Problem:
       type: object
       required: [type, title, status]

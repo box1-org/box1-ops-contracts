@@ -1,27 +1,153 @@
 [
   {
-    "eventId": "11111111-1111-4111-8111-111111111111", "eventType": "order.placed.v1", "schemaVersion": 1,
-    "aggregateId": "ord_1042", "occurredAt": "2026-10-25T12:30:00Z", "correlationId": "corr-1042", "causationId": "cmd-1042",
-    "payload": { "orderId": "ord_1042", "customerId": "cust_demo_1", "sku": "SKU-42", "quantity": 2, "siteId": "site_nyc" }
+    "eventId": "11111111-1111-4111-8111-111111111111",
+    "eventType": "order.placed.v1",
+    "schemaVersion": 1,
+    "aggregateId": "ord_1042",
+    "occurredAt": "2026-10-25T12:30:00Z",
+    "correlationId": "corr-1042",
+    "causationId": "cmd-1042",
+    "payload": {
+      "orderId": "ord_1042",
+      "customerId": "cust_demo_1",
+      "sku": "SKU-42",
+      "quantity": 2,
+      "siteId": "site_nyc"
+    },
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
   },
   {
-    "eventId": "22222222-2222-4222-8222-222222222222", "eventType": "inventory.reserved.v1", "schemaVersion": 1,
-    "aggregateId": "ord_1042", "occurredAt": "2026-10-25T12:31:00Z", "correlationId": "corr-1042", "causationId": "11111111-1111-4111-8111-111111111111",
-    "payload": { "orderId": "ord_1042", "reservationId": "res_1042", "sku": "SKU-42", "quantity": 2, "siteId": "site_nyc", "expiresAt": "2026-10-25T13:31:00Z" }
+    "eventId": "22222222-2222-4222-8222-222222222222",
+    "eventType": "inventory.reserved.v1",
+    "schemaVersion": 1,
+    "aggregateId": "ord_1042",
+    "occurredAt": "2026-10-25T12:31:00Z",
+    "correlationId": "corr-1042",
+    "causationId": "11111111-1111-4111-8111-111111111111",
+    "payload": {
+      "orderId": "ord_1042",
+      "reservationId": "res_1042",
+      "sku": "SKU-42",
+      "quantity": 2,
+      "siteId": "site_nyc",
+      "expiresAt": "2026-10-25T13:31:00Z"
+    },
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
   },
   {
-    "eventId": "33333333-3333-4333-8333-333333333333", "eventType": "fulfillment.requested.v1", "schemaVersion": 1,
-    "aggregateId": "ord_1042", "occurredAt": "2026-10-25T12:32:00Z", "correlationId": "corr-1042", "causationId": "22222222-2222-4222-8222-222222222222",
-    "payload": { "orderId": "ord_1042", "reservationId": "res_1042", "fulfillmentRequestId": "ful_1042", "siteId": "site_nyc", "sku": "SKU-42", "quantity": 2 }
+    "eventId": "33333333-3333-4333-8333-333333333333",
+    "eventType": "fulfillment.requested.v1",
+    "schemaVersion": 1,
+    "aggregateId": "ord_1042",
+    "occurredAt": "2026-10-25T12:32:00Z",
+    "correlationId": "corr-1042",
+    "causationId": "22222222-2222-4222-8222-222222222222",
+    "payload": {
+      "orderId": "ord_1042",
+      "reservationId": "res_1042",
+      "fulfillmentRequestId": "ful_1042",
+      "siteId": "site_nyc",
+      "sku": "SKU-42",
+      "quantity": 2
+    },
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
   },
   {
-    "eventId": "44444444-4444-4444-8444-444444444444", "eventType": "shipment.confirmed.v1", "schemaVersion": 1,
-    "aggregateId": "ord_1042", "occurredAt": "2026-10-25T14:00:00Z", "correlationId": "corr-1042", "causationId": "ful-1042",
-    "payload": { "orderId": "ord_1042", "fulfillmentRequestId": "ful_1042", "shipmentId": "shp_1042", "shippedAt": "2026-10-25T14:00:00Z" }
+    "eventId": "44444444-4444-4444-8444-444444444444",
+    "eventType": "shipment.confirmed.v1",
+    "schemaVersion": 1,
+    "aggregateId": "ord_1042",
+    "occurredAt": "2026-10-25T14:00:00Z",
+    "correlationId": "corr-1042",
+    "causationId": "ful-1042",
+    "payload": {
+      "orderId": "ord_1042",
+      "fulfillmentRequestId": "ful_1042",
+      "shipmentId": "shp_1042",
+      "shippedAt": "2026-10-25T14:00:00Z"
+    },
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
   },
   {
-    "eventId": "55555555-5555-4555-8555-555555555555", "eventType": "equipment.reading.v1", "schemaVersion": 1,
-    "aggregateId": "asset_press_7", "occurredAt": "2026-10-25T12:30:00Z", "correlationId": "telemetry-7", "causationId": "sensor-7",
-    "payload": { "assetId": "asset_press_7", "siteId": "site_nyc", "measuredAt": "2026-10-25T12:30:00Z", "metricName": "temperature", "value": 72.4, "unit": "F" }
+    "eventId": "55555555-5555-4555-8555-555555555555",
+    "eventType": "equipment.reading.v1",
+    "schemaVersion": 1,
+    "aggregateId": "asset_press_7",
+    "occurredAt": "2026-10-25T12:30:00Z",
+    "correlationId": "telemetry-7",
+    "causationId": "sensor-7",
+    "payload": {
+      "assetId": "asset_press_7",
+      "siteId": "site_nyc",
+      "measuredAt": "2026-10-25T12:30:00Z",
+      "metricName": "temperature",
+      "value": 72.4,
+      "unit": "F"
+    }
+  },
+  {
+    "eventId": "66666666-6666-4666-8666-666666666666",
+    "eventType": "inventory.rejected.v1",
+    "schemaVersion": 1,
+    "aggregateId": "ord_1042",
+    "occurredAt": "2026-10-25T12:31:00Z",
+    "correlationId": "corr-1042",
+    "causationId": "11111111-1111-4111-8111-111111111111",
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+    "payload": {
+      "orderId": "ord_1042",
+      "sku": "SKU-42",
+      "quantity": 2,
+      "siteId": "site_nyc",
+      "reasonCode": "INSUFFICIENT_STOCK"
+    }
+  },
+  {
+    "eventId": "77777777-7777-4777-8777-777777777777",
+    "eventType": "inventory.reservation-expired.v1",
+    "schemaVersion": 1,
+    "aggregateId": "ord_1042",
+    "occurredAt": "2026-10-25T13:31:00Z",
+    "correlationId": "corr-1042",
+    "causationId": "22222222-2222-4222-8222-222222222222",
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+    "payload": {
+      "orderId": "ord_1042",
+      "reservationId": "res_1042",
+      "expiredAt": "2026-10-25T13:31:00Z"
+    }
+  },
+  {
+    "eventId": "88888888-8888-4888-8888-888888888888",
+    "eventType": "shipment.failed.v1",
+    "schemaVersion": 1,
+    "aggregateId": "ord_1042",
+    "occurredAt": "2026-10-25T14:00:00Z",
+    "correlationId": "corr-1042",
+    "causationId": "33333333-3333-4333-8333-333333333333",
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+    "payload": {
+      "orderId": "ord_1042",
+      "fulfillmentRequestId": "ful_1042",
+      "retryable": false,
+      "reasonCode": "ERP_REJECTED"
+    }
+  },
+  {
+    "eventId": "99999999-9999-4999-8999-999999999999",
+    "eventType": "order.state-changed.v1",
+    "schemaVersion": 1,
+    "aggregateId": "ord_1042",
+    "occurredAt": "2026-10-25T12:31:01Z",
+    "correlationId": "corr-1042",
+    "causationId": "22222222-2222-4222-8222-222222222222",
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+    "payload": {
+      "orderId": "ord_1042",
+      "fromState": "SUBMITTED",
+      "toState": "RESERVED",
+      "reasonCode": "INVENTORY_RESERVED",
+      "changedAt": "2026-10-25T12:31:01Z"
+    }
   }
 ]

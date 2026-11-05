@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/inventory.reservation-expired.schema.json",
+  "title": "InventoryReservationExpired payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "orderId",
+    "reservationId",
+    "expiredAt"
+  ],
+  "properties": {
+    "orderId": {
+      "type": "string",
+      "pattern": "^ord_[A-Za-z0-9_-]+$"
+    },
+    "reservationId": {
+      "type": "string",
+      "pattern": "^res_[A-Za-z0-9_-]+$"
+    },
+    "expiredAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

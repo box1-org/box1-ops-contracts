@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/shipment.failed.schema.json",
+  "title": "ShipmentFailed payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "orderId",
+    "fulfillmentRequestId",
+    "retryable",
+    "reasonCode"
+  ],
+  "properties": {
+    "orderId": {
+      "type": "string",
+      "pattern": "^ord_[A-Za-z0-9_-]+$"
+    },
+    "fulfillmentRequestId": {
+      "type": "string",
+      "pattern": "^ful_[A-Za-z0-9_-]+$"
+    },
+    "retryable": {
+      "type": "boolean"
+    },
+    "reasonCode": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$",
+      "maxLength": 64
+    }
+  }
+}

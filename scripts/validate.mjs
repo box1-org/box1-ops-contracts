@@ -20,4 +20,25 @@ const openapi = YAML.parse(fs.readFileSync(path.join(root, 'openapi/order-servic
 if (openapi.openapi !== '3.1.0' || !openapi.paths?.['/api/v1/orders'] || !openapi.components?.schemas?.Order) {
   throw new Error('Order OpenAPI contract is incomplete');
 }
-console.log(`PASS ${fixtures.length} event fixtures and ${Object.keys(schemas).length} schemas`);
+const oaAjv = new Ajv2020({ strict: false });
+addFormats(oaAjv);
+oaAjv.addSchema({ $id: 'openapi', components: openapi.components });
+const resolve = ref => ref.replace(/^#\//, '').split('/').reduce((node, key) => node[key], openapi);
+let examples = 0;
+const check = (schema, example, where) => {
+  const value = example?.$ref ? resolve(example.$ref) : example;
+  const validate = oaAjv.compile(schema.$ref ? { $ref: `openapi${schema.$ref}` } : JSON.parse(JSON.stringify(schema).replaceAll('"$ref":"#/', '"$ref":"openapi#/')));
+  if (!validate(value)) throw new Error(`OpenAPI example invalid at ${where}: ${oaAjv.errorsText(validate.errors)}`);
+  examples += 1;
+};
+const walk = (node, where) => {
+  if (!node || typeof node !== 'object') return;
+  if (node.schema && node.example !== undefined) check(node.schema, node.example, where);
+  for (const [key, child] of Object.entries(node)) walk(child, `${where}/${key}`);
+};
+walk(openapi.paths, 'paths');
+walk(openapi.components.responses, 'responses');
+for (const required of ['/api/v1/orders', '/api/v1/orders/{orderId}', '/api/v1/orders/{orderId}/timeline']) {
+  if (!openapi.paths[required]) throw new Error(`Order OpenAPI contract is missing ${required}`);
+}
+console.log(`PASS ${fixtures.length} event fixtures, ${Object.keys(schemas).length} schemas and ${examples} OpenAPI examples`);
