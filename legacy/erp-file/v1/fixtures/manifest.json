@@ -1,0 +1,1383 @@
+{
+  "protocol": "ERP1",
+  "spec": "../SPEC.md",
+  "files": [
+    {
+      "file": "inbound/valid/single-line.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": true,
+      "fileType": "REQ",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "REQ",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "REQ",
+          "fulfillmentRequestId": "ful_1042",
+          "orderId": "ord_1042",
+          "reservationId": "res_1042",
+          "siteId": "site_nyc",
+          "origin": "EVENT",
+          "requestedAt": "2026-10-25T12:32:00.000Z",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "1",
+          "sku": "SKU-42",
+          "quantity": "2"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "4"
+        }
+      ]
+    },
+    {
+      "file": "inbound/valid/multi-line-api.erp1",
+      "name": "REQ.ful_2001.ffffffffffffffffffffffffffffffff.erp1",
+      "valid": true,
+      "fileType": "REQ",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "REQ",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "REQ",
+          "fulfillmentRequestId": "ful_2001",
+          "orderId": "ord_2001",
+          "reservationId": "res_2001",
+          "siteId": "site_bos",
+          "origin": "API",
+          "requestedAt": "2026-11-05T21:59:59.123Z",
+          "correlationId": "",
+          "traceparent": ""
+        },
+        {
+          "type": "LIN",
+          "lineNo": "1",
+          "sku": "PUMP-100",
+          "quantity": "1"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "2",
+          "sku": "SEAL-7",
+          "quantity": "12"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "3",
+          "sku": "VALVE-3",
+          "quantity": "999999999"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "6"
+        }
+      ]
+    },
+    {
+      "file": "inbound/valid/escaped-values.erp1",
+      "name": "REQ.ful_3001.12345678.erp1",
+      "valid": true,
+      "fileType": "REQ",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "REQ",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "REQ",
+          "fulfillmentRequestId": "ful_3001",
+          "orderId": "ord_3001",
+          "reservationId": "res_3001",
+          "siteId": "site_nyc",
+          "origin": "EVENT",
+          "requestedAt": "2026-10-25T12:32:00.000Z",
+          "correlationId": "corr|with\\pipe",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "1",
+          "sku": "BOLT|M8\\ZINC-\u00d8",
+          "quantity": "5"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "4"
+        }
+      ]
+    },
+    {
+      "file": "inbound/valid/max-lines.erp1",
+      "name": "REQ.ful_4001.abcdef01.erp1",
+      "valid": true,
+      "fileType": "REQ",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "REQ",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "REQ",
+          "fulfillmentRequestId": "ful_4001",
+          "orderId": "ord_4001",
+          "reservationId": "res_4001",
+          "siteId": "site_nyc",
+          "origin": "EVENT",
+          "requestedAt": "2026-10-25T12:32:00.000Z",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "1",
+          "sku": "SKU-1",
+          "quantity": "1"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "2",
+          "sku": "SKU-2",
+          "quantity": "2"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "3",
+          "sku": "SKU-3",
+          "quantity": "3"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "4",
+          "sku": "SKU-4",
+          "quantity": "4"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "5",
+          "sku": "SKU-5",
+          "quantity": "5"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "6",
+          "sku": "SKU-6",
+          "quantity": "6"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "7",
+          "sku": "SKU-7",
+          "quantity": "7"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "8",
+          "sku": "SKU-8",
+          "quantity": "8"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "9",
+          "sku": "SKU-9",
+          "quantity": "9"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "10",
+          "sku": "SKU-10",
+          "quantity": "10"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "11",
+          "sku": "SKU-11",
+          "quantity": "11"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "12",
+          "sku": "SKU-12",
+          "quantity": "12"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "13",
+          "sku": "SKU-13",
+          "quantity": "13"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "14",
+          "sku": "SKU-14",
+          "quantity": "14"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "15",
+          "sku": "SKU-15",
+          "quantity": "15"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "16",
+          "sku": "SKU-16",
+          "quantity": "16"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "17",
+          "sku": "SKU-17",
+          "quantity": "17"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "18",
+          "sku": "SKU-18",
+          "quantity": "18"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "19",
+          "sku": "SKU-19",
+          "quantity": "19"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "20",
+          "sku": "SKU-20",
+          "quantity": "20"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "21",
+          "sku": "SKU-21",
+          "quantity": "21"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "22",
+          "sku": "SKU-22",
+          "quantity": "22"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "23",
+          "sku": "SKU-23",
+          "quantity": "23"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "24",
+          "sku": "SKU-24",
+          "quantity": "24"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "25",
+          "sku": "SKU-25",
+          "quantity": "25"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "26",
+          "sku": "SKU-26",
+          "quantity": "26"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "27",
+          "sku": "SKU-27",
+          "quantity": "27"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "28",
+          "sku": "SKU-28",
+          "quantity": "28"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "29",
+          "sku": "SKU-29",
+          "quantity": "29"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "30",
+          "sku": "SKU-30",
+          "quantity": "30"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "31",
+          "sku": "SKU-31",
+          "quantity": "31"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "32",
+          "sku": "SKU-32",
+          "quantity": "32"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "33",
+          "sku": "SKU-33",
+          "quantity": "33"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "34",
+          "sku": "SKU-34",
+          "quantity": "34"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "35",
+          "sku": "SKU-35",
+          "quantity": "35"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "36",
+          "sku": "SKU-36",
+          "quantity": "36"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "37",
+          "sku": "SKU-37",
+          "quantity": "37"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "38",
+          "sku": "SKU-38",
+          "quantity": "38"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "39",
+          "sku": "SKU-39",
+          "quantity": "39"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "40",
+          "sku": "SKU-40",
+          "quantity": "40"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "41",
+          "sku": "SKU-41",
+          "quantity": "41"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "42",
+          "sku": "SKU-42",
+          "quantity": "42"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "43",
+          "sku": "SKU-43",
+          "quantity": "43"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "44",
+          "sku": "SKU-44",
+          "quantity": "44"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "45",
+          "sku": "SKU-45",
+          "quantity": "45"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "46",
+          "sku": "SKU-46",
+          "quantity": "46"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "47",
+          "sku": "SKU-47",
+          "quantity": "47"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "48",
+          "sku": "SKU-48",
+          "quantity": "48"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "49",
+          "sku": "SKU-49",
+          "quantity": "49"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "50",
+          "sku": "SKU-50",
+          "quantity": "50"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "51",
+          "sku": "SKU-51",
+          "quantity": "51"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "52",
+          "sku": "SKU-52",
+          "quantity": "52"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "53",
+          "sku": "SKU-53",
+          "quantity": "53"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "54",
+          "sku": "SKU-54",
+          "quantity": "54"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "55",
+          "sku": "SKU-55",
+          "quantity": "55"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "56",
+          "sku": "SKU-56",
+          "quantity": "56"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "57",
+          "sku": "SKU-57",
+          "quantity": "57"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "58",
+          "sku": "SKU-58",
+          "quantity": "58"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "59",
+          "sku": "SKU-59",
+          "quantity": "59"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "60",
+          "sku": "SKU-60",
+          "quantity": "60"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "61",
+          "sku": "SKU-61",
+          "quantity": "61"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "62",
+          "sku": "SKU-62",
+          "quantity": "62"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "63",
+          "sku": "SKU-63",
+          "quantity": "63"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "64",
+          "sku": "SKU-64",
+          "quantity": "64"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "65",
+          "sku": "SKU-65",
+          "quantity": "65"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "66",
+          "sku": "SKU-66",
+          "quantity": "66"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "67",
+          "sku": "SKU-67",
+          "quantity": "67"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "68",
+          "sku": "SKU-68",
+          "quantity": "68"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "69",
+          "sku": "SKU-69",
+          "quantity": "69"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "70",
+          "sku": "SKU-70",
+          "quantity": "70"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "71",
+          "sku": "SKU-71",
+          "quantity": "71"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "72",
+          "sku": "SKU-72",
+          "quantity": "72"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "73",
+          "sku": "SKU-73",
+          "quantity": "73"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "74",
+          "sku": "SKU-74",
+          "quantity": "74"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "75",
+          "sku": "SKU-75",
+          "quantity": "75"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "76",
+          "sku": "SKU-76",
+          "quantity": "76"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "77",
+          "sku": "SKU-77",
+          "quantity": "77"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "78",
+          "sku": "SKU-78",
+          "quantity": "78"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "79",
+          "sku": "SKU-79",
+          "quantity": "79"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "80",
+          "sku": "SKU-80",
+          "quantity": "80"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "81",
+          "sku": "SKU-81",
+          "quantity": "81"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "82",
+          "sku": "SKU-82",
+          "quantity": "82"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "83",
+          "sku": "SKU-83",
+          "quantity": "83"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "84",
+          "sku": "SKU-84",
+          "quantity": "84"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "85",
+          "sku": "SKU-85",
+          "quantity": "85"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "86",
+          "sku": "SKU-86",
+          "quantity": "86"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "87",
+          "sku": "SKU-87",
+          "quantity": "87"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "88",
+          "sku": "SKU-88",
+          "quantity": "88"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "89",
+          "sku": "SKU-89",
+          "quantity": "89"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "90",
+          "sku": "SKU-90",
+          "quantity": "90"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "91",
+          "sku": "SKU-91",
+          "quantity": "91"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "92",
+          "sku": "SKU-92",
+          "quantity": "92"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "93",
+          "sku": "SKU-93",
+          "quantity": "93"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "94",
+          "sku": "SKU-94",
+          "quantity": "94"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "95",
+          "sku": "SKU-95",
+          "quantity": "95"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "96",
+          "sku": "SKU-96",
+          "quantity": "96"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "97",
+          "sku": "SKU-97",
+          "quantity": "97"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "98",
+          "sku": "SKU-98",
+          "quantity": "98"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "99",
+          "sku": "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS\u00e9",
+          "quantity": "99"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "102"
+        }
+      ]
+    },
+    {
+      "file": "inbound/valid/single-line-repeat-api.erp1",
+      "name": "REQ.ful_1042.0000ffff.erp1",
+      "valid": true,
+      "fileType": "REQ",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "REQ",
+          "createdAt": "2026-11-05T23:10:00.000Z"
+        },
+        {
+          "type": "REQ",
+          "fulfillmentRequestId": "ful_1042",
+          "orderId": "ord_1042",
+          "reservationId": "res_1042",
+          "siteId": "site_nyc",
+          "origin": "API",
+          "requestedAt": "2026-11-05T23:09:59.000Z",
+          "correlationId": "",
+          "traceparent": ""
+        },
+        {
+          "type": "LIN",
+          "lineNo": "1",
+          "sku": "SKU-42",
+          "quantity": "2"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "4"
+        }
+      ]
+    },
+    {
+      "file": "inbound/valid/single-line-conflict.erp1",
+      "name": "REQ.ful_1042.deadbeef.erp1",
+      "valid": true,
+      "fileType": "REQ",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "REQ",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "REQ",
+          "fulfillmentRequestId": "ful_1042",
+          "orderId": "ord_1042",
+          "reservationId": "res_1042",
+          "siteId": "site_nyc",
+          "origin": "EVENT",
+          "requestedAt": "2026-10-25T12:32:00.000Z",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "1",
+          "sku": "SKU-42",
+          "quantity": "3"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "4"
+        }
+      ]
+    },
+    {
+      "file": "inbound/valid/single-line-other-site.erp1",
+      "name": "REQ.ful_1042.cafebabe.erp1",
+      "valid": true,
+      "fileType": "REQ",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "REQ",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "REQ",
+          "fulfillmentRequestId": "ful_1042",
+          "orderId": "ord_1042",
+          "reservationId": "res_1042",
+          "siteId": "site_bos",
+          "origin": "EVENT",
+          "requestedAt": "2026-10-25T12:32:00.000Z",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "LIN",
+          "lineNo": "1",
+          "sku": "SKU-42",
+          "quantity": "2"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "4"
+        }
+      ]
+    },
+    {
+      "file": "inbound/invalid/too-large.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FILE_TOO_LARGE",
+      "why": "over 65,536 bytes; size is checked first"
+    },
+    {
+      "file": "inbound/invalid/bom.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "ENCODING",
+      "why": "UTF-8 byte-order mark"
+    },
+    {
+      "file": "inbound/invalid/invalid-utf8.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "ENCODING",
+      "why": "invalid UTF-8 byte"
+    },
+    {
+      "file": "inbound/invalid/crlf.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "ENCODING",
+      "why": "CR line endings"
+    },
+    {
+      "file": "inbound/invalid/tab-in-sku.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "ENCODING",
+      "why": "control character in a value"
+    },
+    {
+      "file": "inbound/invalid/empty.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "TRUNCATED",
+      "why": "empty file"
+    },
+    {
+      "file": "inbound/invalid/no-final-lf.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "TRUNCATED",
+      "why": "last record not terminated"
+    },
+    {
+      "file": "inbound/invalid/cut-before-trl.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "TRUNCATED",
+      "why": "ends after LIN without TRL"
+    },
+    {
+      "file": "inbound/invalid/unknown-record.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "MALFORMED_RECORD",
+      "why": "unknown record type"
+    },
+    {
+      "file": "inbound/invalid/bad-escape.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "MALFORMED_RECORD",
+      "why": "backslash followed by n"
+    },
+    {
+      "file": "inbound/invalid/field-count.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "MALFORMED_RECORD",
+      "why": "LIN with four fields"
+    },
+    {
+      "file": "inbound/invalid/blank-line.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "MALFORMED_RECORD",
+      "why": "empty record"
+    },
+    {
+      "file": "inbound/invalid/version-2.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "UNSUPPORTED_VERSION",
+      "why": "magic ERP2"
+    },
+    {
+      "file": "inbound/invalid/lin-before-req.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "RECORD_ORDER",
+      "why": "LIN before REQ"
+    },
+    {
+      "file": "inbound/invalid/trl-without-lin.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "RECORD_ORDER",
+      "why": "TRL before the first LIN"
+    },
+    {
+      "file": "inbound/invalid/record-after-trl.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "RECORD_ORDER",
+      "why": "LIN after TRL"
+    },
+    {
+      "file": "inbound/invalid/lines-100.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "RECORD_ORDER",
+      "why": "a 100th LIN; checked before lineNo"
+    },
+    {
+      "file": "inbound/invalid/missing-order-id.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "MISSING_FIELD",
+      "why": "orderId empty"
+    },
+    {
+      "file": "inbound/invalid/sku-81.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_LENGTH",
+      "why": "sku of 81 code points"
+    },
+    {
+      "file": "inbound/invalid/quantity-zero.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "quantity 0"
+    },
+    {
+      "file": "inbound/invalid/quantity-leading-zero.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "quantity 02"
+    },
+    {
+      "file": "inbound/invalid/quantity-too-long.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_LENGTH",
+      "why": "ten digits"
+    },
+    {
+      "file": "inbound/invalid/impossible-date.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "February 30"
+    },
+    {
+      "file": "inbound/invalid/timestamp-offset.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_LENGTH",
+      "why": "offset form is 29 characters"
+    },
+    {
+      "file": "inbound/invalid/timestamp-no-millis.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "no milliseconds"
+    },
+    {
+      "file": "inbound/invalid/line-out-of-sequence.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "first LIN numbered 2"
+    },
+    {
+      "file": "inbound/invalid/wrong-prefix.erp1",
+      "name": "REQ.fr_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "ful_ prefix missing"
+    },
+    {
+      "file": "inbound/invalid/bad-origin.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "origin must be EVENT or API"
+    },
+    {
+      "file": "inbound/invalid/header-type.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "unknown file type"
+    },
+    {
+      "file": "inbound/invalid/count-mismatch.erp1",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "COUNT_MISMATCH",
+      "why": "TRL says 5, file has 4"
+    },
+    {
+      "file": "inbound/invalid/name-other-id.erp1",
+      "name": "REQ.ful_9999.0a1b2c3d.erp1",
+      "valid": false,
+      "errorCode": "FILENAME_MISMATCH",
+      "why": "name carries a different request ID"
+    },
+    {
+      "file": "inbound/invalid/name-short-nonce.erp1",
+      "name": "REQ.ful_1042.abc.erp1",
+      "valid": false,
+      "errorCode": "FILENAME_MISMATCH",
+      "why": "nonce shorter than 8 hex"
+    },
+    {
+      "file": "outbound/valid/ful_1042-r1-pending.erp1",
+      "name": "RES.ful_1042.000001.rsl_00000000000000000000000000000001.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_00000000000000000000000000000001",
+          "fulfillmentRequestId": "ful_1042",
+          "revision": "1",
+          "status": "PENDING",
+          "orderId": "ord_1042",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:01:00.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_1042-r2-held.erp1",
+      "name": "RES.ful_1042.000002.rsl_00000000000000000000000000000002.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_00000000000000000000000000000002",
+          "fulfillmentRequestId": "ful_1042",
+          "revision": "2",
+          "status": "HELD",
+          "orderId": "ord_1042",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:02:00.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_1042-r3-pending.erp1",
+      "name": "RES.ful_1042.000003.rsl_00000000000000000000000000000003.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_00000000000000000000000000000003",
+          "fulfillmentRequestId": "ful_1042",
+          "revision": "3",
+          "status": "PENDING",
+          "orderId": "ord_1042",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:03:00.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_1042-r4-shipped.erp1",
+      "name": "RES.ful_1042.000004.rsl_00000000000000000000000000000004.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_00000000000000000000000000000004",
+          "fulfillmentRequestId": "ful_1042",
+          "revision": "4",
+          "status": "SHIPPED",
+          "orderId": "ord_1042",
+          "shipmentId": "shp_0f0e0d0c0b0a09080706050403020100",
+          "statusAt": "2026-11-05T22:04:00.000Z",
+          "reasonCode": "",
+          "reasonText": "",
+          "correlationId": "corr-1042",
+          "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/ful_2001-r2-rejected.erp1",
+      "name": "RES.ful_2001.000002.rsl_00000000000000000000000000000005.erp1",
+      "valid": true,
+      "fileType": "RES",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "RES",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "RES",
+          "resultId": "rsl_00000000000000000000000000000005",
+          "fulfillmentRequestId": "ful_2001",
+          "revision": "2",
+          "status": "REJECTED",
+          "orderId": "ord_2001",
+          "shipmentId": "",
+          "statusAt": "2026-11-05T22:05:00.000Z",
+          "reasonCode": "DAMAGED_GOODS",
+          "reasonText": "Pallet crushed | relabel\\recount",
+          "correlationId": "",
+          "traceparent": ""
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/valid/err-conflicting-reuse.erp1",
+      "name": "ERR.err_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.erp1",
+      "valid": true,
+      "fileType": "ERR",
+      "records": [
+        {
+          "type": "HDR",
+          "magic": "ERP1",
+          "fileType": "ERR",
+          "createdAt": "2026-11-05T22:00:00.000Z"
+        },
+        {
+          "type": "ERR",
+          "errorId": "err_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "inboundFileName": "REQ.ful_1042.deadbeef.erp1",
+          "fulfillmentRequestId": "ful_1042",
+          "errorCode": "CONFLICTING_REUSE",
+          "detail": "ful_1042 already exists with different content"
+        },
+        {
+          "type": "TRL",
+          "recordCount": "3"
+        }
+      ]
+    },
+    {
+      "file": "outbound/invalid/shipped-without-shipment.erp1",
+      "name": "RES.ful_1042.000004.rsl_00000000000000000000000000000004.erp1",
+      "valid": false,
+      "errorCode": "MISSING_FIELD",
+      "why": "SHIPPED needs shipmentId"
+    },
+    {
+      "file": "outbound/invalid/pending-with-shipment.erp1",
+      "name": "RES.ful_1042.000001.rsl_00000000000000000000000000000001.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "shipmentId must be empty unless SHIPPED"
+    },
+    {
+      "file": "outbound/invalid/rejected-without-reason.erp1",
+      "name": "RES.ful_2001.000002.rsl_00000000000000000000000000000005.erp1",
+      "valid": false,
+      "errorCode": "MISSING_FIELD",
+      "why": "reasonText required"
+    },
+    {
+      "file": "outbound/invalid/rejected-unknown-code.erp1",
+      "name": "RES.ful_2001.000002.rsl_00000000000000000000000000000005.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "reasonCode not in the list"
+    },
+    {
+      "file": "outbound/invalid/revision-zero.erp1",
+      "name": "RES.ful_1042.000000.rsl_00000000000000000000000000000001.erp1",
+      "valid": false,
+      "errorCode": "FIELD_VALUE",
+      "why": "revision starts at 1"
+    },
+    {
+      "file": "outbound/invalid/name-unpadded-revision.erp1",
+      "name": "RES.ful_1042.1.rsl_00000000000000000000000000000001.erp1",
+      "valid": false,
+      "errorCode": "FILENAME_MISMATCH",
+      "why": "revision must be six digits in the name"
+    }
+  ],
+  "equivalence": [
+    {
+      "a": "inbound/valid/single-line.erp1",
+      "b": "inbound/valid/single-line-repeat-api.erp1",
+      "equivalent": true,
+      "why": "origin, requestedAt, correlationId, traceparent, header and file name are not compared"
+    },
+    {
+      "a": "inbound/valid/single-line.erp1",
+      "b": "inbound/valid/single-line-conflict.erp1",
+      "equivalent": false,
+      "why": "quantity differs"
+    },
+    {
+      "a": "inbound/valid/single-line.erp1",
+      "b": "inbound/valid/single-line-other-site.erp1",
+      "equivalent": false,
+      "why": "siteId differs"
+    }
+  ],
+  "names": [
+    {
+      "area": "inbound",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1",
+      "expect": "ready"
+    },
+    {
+      "area": "inbound",
+      "name": ".REQ.ful_1042.0a1b2c3d.erp1.tmp",
+      "expect": "ignore"
+    },
+    {
+      "area": "inbound",
+      "name": ".anything.tmp",
+      "expect": "ignore"
+    },
+    {
+      "area": "inbound",
+      "name": "REQ.ful_1042.0a1b2c3d.erp1.tmp",
+      "expect": "quarantine"
+    },
+    {
+      "area": "inbound",
+      "name": "req.ful_1042.0a1b2c3d.erp1",
+      "expect": "quarantine"
+    },
+    {
+      "area": "inbound",
+      "name": "RES.ful_1042.000001.rsl_00000000000000000000000000000001.erp1",
+      "expect": "quarantine"
+    },
+    {
+      "area": "inbound",
+      "name": "notes.txt",
+      "expect": "quarantine"
+    },
+    {
+      "area": "outbound",
+      "name": "RES.ful_1042.000001.rsl_00000000000000000000000000000001.erp1",
+      "expect": "ready"
+    },
+    {
+      "area": "outbound",
+      "name": "ERR.err_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.erp1",
+      "expect": "ready"
+    },
+    {
+      "area": "outbound",
+      "name": ".RES.ful_1042.000001.rsl_00000000000000000000000000000001.erp1.tmp",
+      "expect": "ignore"
+    }
+  ],
+  "mapping": [
+    {
+      "eventId": "33333333-3333-4333-8333-333333333333",
+      "createdAt": "2026-11-05T22:00:00.000Z",
+      "expected": "inbound/valid/single-line.erp1",
+      "why": "the event in ../../../../fixtures/events.json maps to exactly this file when createdAt is fixed"
+    }
+  ]
+}
