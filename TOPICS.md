@@ -11,5 +11,6 @@
 | `box1.inventory.dlq.v1` | Inventory | Records the `inventory` consumer group could not process, unchanged | original key | 14d | none; operator replay only |
 | `box1.fulfillment.dlq.v1` | Fulfillment adapter | Records the `fulfillment` consumer group could not process, unchanged | original key | 14d | none; operator replay only |
 | `box1.telemetry.dlq.v1` | Telemetry | Records the `asset-service` consumer group could not process, unchanged | original key | 14d | none; operator replay only |
+| `box1.notification.dlq.v1` | Notification | Records the `notification` consumer group could not process, unchanged | original key | 7d | `notification-replay` (operator-enabled replay inside the service) |
 
 Every topic needs a bounded retry path and auditable dead-letter/replay procedure. The exact Kafka resource profile remains environment-specific; these are contract-level ownership and retention requirements.
