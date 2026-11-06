@@ -2,7 +2,7 @@
 
 | Topic | Owner | Event types | Partition key | Retention | Consumer groups |
 |---|---|---|---|---:|---|
-| `box1.order.events.v1` | Order | `order.placed.v1`, `order.state-changed.v1`, `fulfillment.requested.v1` | `orderId` | 7d | `inventory`, `fulfillment`, `bff-projections` |
+| `box1.order.events.v1` | Order | `order.placed.v1`, `order.state-changed.v1`, `fulfillment.requested.v1` | `orderId` | 7d | `inventory`, `fulfillment`, `bff-projections`, `notification` |
 | `box1.inventory.events.v1` | Inventory | `inventory.reserved.v1`, `inventory.rejected.v1`, `inventory.reservation-expired.v1` | `orderId` | 7d | `order` |
 | `box1.fulfillment.events.v1` | Fulfillment adapter | `shipment.confirmed.v1`, `shipment.failed.v1` | `orderId` | 14d | `order`, `notification`, `inventory` |
 | `box1.telemetry.events.v1` | Telemetry | `equipment.reading.v1`, `equipment.threshold-exceeded.v1` | `assetId` | 2d | `asset-service`, `telemetry-projections`, `ai-operations` |
