@@ -74,6 +74,7 @@ test('notification contract: closed payloads, no customer fields, order-topic co
   const topics = fs.readFileSync(path.join(root, 'TOPICS.md'), 'utf8');
   assert.match(topics, /box1\.order\.events\.v1.*`notification`/);
   assert.match(topics, /box1\.fulfillment\.events\.v1.*`notification`/);
+  assert.match(topics, /box1\.notification\.dlq\.v1.*Notification/);
   const fixtures = JSON.parse(fs.readFileSync(path.join(root, 'fixtures/events.json'), 'utf8'));
   for (const type of ['notification.delivered.v1', 'notification.failed.v1']) {
     const event = fixtures.find(e => e.eventType === type);
