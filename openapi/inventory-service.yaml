@@ -48,6 +48,73 @@ paths:
         '400': { $ref: '#/components/responses/Problem' }
         '401': { $ref: '#/components/responses/Problem' }
         '404': { $ref: '#/components/responses/Problem' }
+  /internal/v1/sites/{siteId}:
+    put:
+      operationId: createSite
+      description: Create a site once. Never changes an existing site.
+      security: [{ bearer: [inventory-admin] }]
+      parameters:
+        - in: path
+          name: siteId
+          required: true
+          schema: { $ref: '#/components/schemas/SiteId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SiteRequest' }
+            example: { status: ACTIVE, reason: Fixture seed }
+      responses:
+        '201':
+          description: Site created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Site' }
+        '200':
+          description: The site exists with this status. Nothing changed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Site' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /internal/v1/stock/{siteId}/{sku}:
+    put:
+      operationId: createStock
+      description: Create a stock record once with its opening quantity. Never changes an existing record.
+      security: [{ bearer: [inventory-admin] }]
+      parameters:
+        - in: path
+          name: siteId
+          required: true
+          schema: { $ref: '#/components/schemas/SiteId' }
+        - in: path
+          name: sku
+          required: true
+          schema: { $ref: '#/components/schemas/Sku' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StockRequest' }
+            example: { openingQuantity: 500, reason: Fixture seed }
+      responses:
+        '201':
+          description: Stock record created with the opening quantity on hand.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockLevel' }
+        '200':
+          description: The record was opened earlier with the same quantity. Returns the current level; nothing changed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockLevel' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
   /internal/v1/stock/{siteId}/{sku}/restock:
     post:
       operationId: restock
@@ -176,6 +243,26 @@ components:
         expiresAt: { type: string, format: date-time, description: Not enforced once COMMITTED }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    SiteRequest:
+      type: object
+      additionalProperties: false
+      required: [status, reason]
+      properties:
+        status: { type: string, enum: [ACTIVE, UNAVAILABLE] }
+        reason: { type: string, minLength: 1, maxLength: 200 }
+    Site:
+      type: object
+      required: [siteId, status]
+      properties:
+        siteId: { $ref: '#/components/schemas/SiteId' }
+        status: { type: string, enum: [ACTIVE, UNAVAILABLE] }
+    StockRequest:
+      type: object
+      additionalProperties: false
+      required: [openingQuantity, reason]
+      properties:
+        openingQuantity: { type: integer, minimum: 0, maximum: 1000000 }
+        reason: { type: string, minLength: 1, maxLength: 200 }
     Restock:
       type: object
       additionalProperties: false
