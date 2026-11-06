@@ -149,5 +149,27 @@
       "reasonCode": "INVENTORY_RESERVED",
       "changedAt": "2026-10-25T12:31:01Z"
     }
+  },
+  {
+    "eventId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "eventType": "equipment.threshold-exceeded.v1",
+    "schemaVersion": 1,
+    "aggregateId": "asset_press_7",
+    "occurredAt": "2026-10-25T12:31:05Z",
+    "correlationId": "telemetry-7",
+    "causationId": "55555555-5555-4555-8555-555555555555",
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+    "payload": {
+      "assetId": "asset_press_7",
+      "siteId": "site_nyc",
+      "metricName": "temperature",
+      "value": 96.5,
+      "threshold": 95,
+      "severity": "CRITICAL",
+      "unit": "C",
+      "alertId": "alt_press_7_temp_1",
+      "measuredAt": "2026-10-25T12:31:04Z",
+      "sourceEventId": "55555555-5555-4555-8555-555555555555"
+    }
   }
 ]

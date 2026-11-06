@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/equipment.threshold-exceeded.schema.json",
+  "title": "EquipmentThresholdExceeded payload v1",
+  "description": "Emitted once when a threshold alert for one asset and metric becomes active. Repeated breaching readings, escalation and clearing do not emit this event. See TELEMETRY.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assetId", "siteId", "metricName", "value", "threshold", "severity"],
+  "properties": {
+    "assetId": { "type": "string", "pattern": "^asset_[A-Za-z0-9_-]+$" },
+    "siteId": { "type": "string", "pattern": "^site_[A-Za-z0-9_-]+$" },
+    "metricName": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "value": { "type": "number", "finite": true },
+    "threshold": { "type": "number", "finite": true },
+    "severity": { "type": "string", "enum": ["WARNING", "CRITICAL"] },
+    "unit": { "type": "string", "minLength": 1, "maxLength": 20 },
+    "alertId": { "type": "string", "pattern": "^alt_[A-Za-z0-9_-]+$" },
+    "measuredAt": { "type": "string", "format": "date-time" },
+    "sourceEventId": { "type": "string", "format": "uuid" }
+  }
+}

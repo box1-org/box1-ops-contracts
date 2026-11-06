@@ -6,7 +6,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const schemaDir = path.join(root, 'events/v1');
 const schema = name => JSON.parse(fs.readFileSync(path.join(schemaDir, name), 'utf8'));
 test('v1 payload schemas retain required fields and types', () => {
-  for (const name of ['order.placed.schema.json','inventory.reserved.schema.json','fulfillment.requested.schema.json','shipment.confirmed.schema.json','equipment.reading.schema.json','inventory.rejected.schema.json','inventory.reservation-expired.schema.json','shipment.failed.schema.json','order.state-changed.schema.json']) {
+  for (const name of ['order.placed.schema.json','inventory.reserved.schema.json','fulfillment.requested.schema.json','shipment.confirmed.schema.json','equipment.reading.schema.json','inventory.rejected.schema.json','inventory.reservation-expired.schema.json','shipment.failed.schema.json','order.state-changed.schema.json','equipment.threshold-exceeded.schema.json']) {
     const value = schema(name);
     assert.ok(value.required.length > 0, name);
     for (const key of value.required) assert.ok(value.properties[key], `${name}: missing ${key}`);
@@ -48,4 +48,16 @@ test('inventory contract covers reservation states, reason codes and its dead-le
   for (const word of ['inventory_stock', 'on_hand', 'outbox', 'COMMITTED', 'CONSUMED']) {
     assert.match(sql, new RegExp(word));
   }
+});
+
+test('telemetry contract covers threshold events, keying and its dead-letter topic', () => {
+  const alert = schema('equipment.threshold-exceeded.schema.json');
+  for (const key of ['assetId', 'siteId', 'metricName', 'value', 'threshold', 'severity']) assert.ok(alert.required.includes(key), key);
+  assert.deepEqual(alert.properties.severity.enum, ['WARNING', 'CRITICAL']);
+  assert.equal(alert.additionalProperties, false);
+  const doc = fs.readFileSync(path.join(root, 'TELEMETRY.md'), 'utf8');
+  for (const word of ['assetId', 'sourceEventId', 'box1.telemetry.dlq.v1', 'One event per activation']) assert.match(doc, new RegExp(word.replaceAll('.', '\\.')));
+  const topics = fs.readFileSync(path.join(root, 'TOPICS.md'), 'utf8');
+  assert.match(topics, /box1\.telemetry\.dlq\.v1/);
+  assert.match(topics, /box1\.telemetry\.events\.v1.*`asset-service`/);
 });
