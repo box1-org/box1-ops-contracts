@@ -4,7 +4,8 @@ info:
   version: 1.0.0
   description: >
     Telemetry ingestion and reads for box1-org/asset-service. Every operation needs a bearer token from
-    Keycloak realm box1 with audience asset-service; ingestion also needs client role telemetry-writer.
+    Keycloak realm box1 issued to client asset-service (aud and azp); ingestion needs client role telemetry-writer,
+    reads need telemetry-reader, telemetry-writer or chaos-operator.
     The service's console API (/api/v1/control) is not part of this contract. See TELEMETRY.md.
 servers:
   - url: https://asset-service-dev.apps.ocp.box1.org
@@ -44,6 +45,7 @@ paths:
   /api/v1/assets/{assetId}/readings:
     get:
       operationId: listReadings
+      security: [{ bearer: [telemetry-reader] }, { bearer: [telemetry-writer] }, { bearer: [chaos-operator] }]
       parameters:
         - in: path
           name: assetId
@@ -96,6 +98,7 @@ paths:
   /api/v1/alerts:
     get:
       operationId: listAlerts
+      security: [{ bearer: [telemetry-reader] }, { bearer: [telemetry-writer] }, { bearer: [chaos-operator] }]
       parameters:
         - in: query
           name: status

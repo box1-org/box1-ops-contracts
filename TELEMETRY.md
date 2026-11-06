@@ -9,9 +9,9 @@ The Telemetry service runs as `box1-org/asset-service`. It owns sensor readings,
 | `equipment.reading.v1` | A reading passed validation and was accepted for publication | `assetId` | `assetId` |
 | `equipment.threshold-exceeded.v1` | A threshold alert for one `(assetId, metricName)` became active | `assetId` | `assetId` |
 
-Keying by `assetId` keeps each asset's readings and alerts in order within one partition. Delivery is at least once.
+Keying by `assetId` keeps each asset's readings in order within one partition. Threshold events are published from an outbox after their transaction commits, so they follow later readings of the same asset and can be retried after them; order them by `occurredAt`, not by offset. Delivery is at least once.
 
-- `equipment.reading.v1` carries only the six payload fields. Consumers deduplicate on `(assetId, metricName, measuredAt)`: the same asset, metric and instant is one reading, whatever its `eventId`.
+- `equipment.reading.v1` carries only the six payload fields. Its `eventId` is derived from `(assetId, metricName, measuredAt)`, so a retried or re-sent reading keeps its `eventId`; deduplicating on either gives the same result. When two readings share that key with different values, the first one stored wins. `causationId` names the ingestion source (`ingest:api`, `ingest:load`, `ingest:chaos`), not a previous event.
 - `equipment.threshold-exceeded.v1` is written to the service's outbox in the same transaction as the alert, so it may be published more than once after a failure; consumers deduplicate on `alertId` when present, else `eventId`. `causationId` and `sourceEventId` are the `eventId` of the reading that activated the alert, and `traceparent` continues that reading's trace.
 - One event per activation. A breaching reading while the alert is already active, escalation from `WARNING` to `CRITICAL`, and clearing are recorded by the service and visible through `GET /api/v1/alerts`, but are not events in v1. A clear event would be an additive v1 event type.
 
