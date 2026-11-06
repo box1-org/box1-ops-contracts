@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/notification.delivered.schema.json",
+  "title": "NotificationDelivered payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "notificationId",
+    "orderId",
+    "noticeType",
+    "channel",
+    "templateVersion",
+    "attemptCount",
+    "provider",
+    "receiptId",
+    "deliveredAt"
+  ],
+  "properties": {
+    "notificationId": {
+      "type": "string",
+      "pattern": "^ntf_[A-Za-z0-9_-]{1,64}$"
+    },
+    "orderId": {
+      "type": "string",
+      "pattern": "^ord_[A-Za-z0-9_-]+$"
+    },
+    "noticeType": {
+      "type": "string",
+      "enum": [
+        "ORDER_SHIPPED",
+        "SHIPMENT_DELAYED",
+        "SHIPMENT_FAILED",
+        "ORDER_EXCEPTION",
+        "ORDER_REJECTED"
+      ]
+    },
+    "channel": {
+      "type": "string",
+      "pattern": "^ops-[a-z0-9-]{1,40}$"
+    },
+    "templateVersion": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z_]*@v[1-9][0-9]*$",
+      "maxLength": 64
+    },
+    "attemptCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "stub"
+      ]
+    },
+    "receiptId": {
+      "type": "string",
+      "pattern": "^rcpt_[0-9a-f]{24}$"
+    },
+    "deliveredAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

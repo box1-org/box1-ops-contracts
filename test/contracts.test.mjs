@@ -6,7 +6,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const schemaDir = path.join(root, 'events/v1');
 const schema = name => JSON.parse(fs.readFileSync(path.join(schemaDir, name), 'utf8'));
 test('v1 payload schemas retain required fields and types', () => {
-  for (const name of ['order.placed.schema.json','inventory.reserved.schema.json','fulfillment.requested.schema.json','shipment.confirmed.schema.json','equipment.reading.schema.json','inventory.rejected.schema.json','inventory.reservation-expired.schema.json','shipment.failed.schema.json','order.state-changed.schema.json','equipment.threshold-exceeded.schema.json']) {
+  for (const name of ['order.placed.schema.json','inventory.reserved.schema.json','fulfillment.requested.schema.json','shipment.confirmed.schema.json','equipment.reading.schema.json','inventory.rejected.schema.json','inventory.reservation-expired.schema.json','shipment.failed.schema.json','order.state-changed.schema.json','equipment.threshold-exceeded.schema.json','notification.delivered.schema.json','notification.failed.schema.json']) {
     const value = schema(name);
     assert.ok(value.required.length > 0, name);
     for (const key of value.required) assert.ok(value.properties[key], `${name}: missing ${key}`);
@@ -60,4 +60,24 @@ test('telemetry contract covers threshold events, keying and its dead-letter top
   const topics = fs.readFileSync(path.join(root, 'TOPICS.md'), 'utf8');
   assert.match(topics, /box1\.telemetry\.dlq\.v1/);
   assert.match(topics, /box1\.telemetry\.events\.v1.*`asset-service`/);
+});
+
+test('notification contract: closed payloads, no customer fields, order-topic consumer group', () => {
+  for (const name of ['notification.delivered.schema.json', 'notification.failed.schema.json']) {
+    const value = schema(name);
+    assert.equal(value.additionalProperties, false, name);
+    for (const key of ['notificationId', 'orderId', 'noticeType', 'channel', 'templateVersion', 'attemptCount', 'provider']) assert.ok(value.required.includes(key), `${name}: ${key}`);
+    for (const key of Object.keys(value.properties)) assert.doesNotMatch(key, /customer|email|phone|recipient|address|name$/i, `${name}: ${key}`);
+  }
+  const failed = schema('notification.failed.schema.json');
+  assert.deepEqual(failed.properties.failureCategory.enum, ['RETRIES_EXHAUSTED', 'PERMANENT_REJECTION']);
+  const topics = fs.readFileSync(path.join(root, 'TOPICS.md'), 'utf8');
+  assert.match(topics, /box1\.order\.events\.v1.*`notification`/);
+  assert.match(topics, /box1\.fulfillment\.events\.v1.*`notification`/);
+  const fixtures = JSON.parse(fs.readFileSync(path.join(root, 'fixtures/events.json'), 'utf8'));
+  for (const type of ['notification.delivered.v1', 'notification.failed.v1']) {
+    const event = fixtures.find(e => e.eventType === type);
+    assert.ok(event, type);
+    assert.equal(event.aggregateId, event.payload.orderId);
+  }
 });

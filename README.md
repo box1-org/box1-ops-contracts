@@ -16,4 +16,6 @@ No credentials, customer PII, live topic data, or database exports belong here.
 
 The legacy ERP file protocol (`ERP1`), shared by the ERP appliance and the fulfillment adapter, is in [`legacy/erp-file/v1/`](legacy/erp-file/v1/SPEC.md) with its golden fixtures.
 
+Notification events, notice types and their deduplication rules are in [`NOTIFICATION.md`](NOTIFICATION.md).
+
 PostgreSQL ownership, Flyway rules, Secret bootstrap, storage, backup, and restore guidance is in [`postgres/`](postgres/).
