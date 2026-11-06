@@ -9,5 +9,6 @@
 | `box1.notification.events.v1` | Notification | `notification.requested.v1`, `notification.delivered.v1`, `notification.failed.v1` | `orderId` | 14d | `notification-history` |
 | `box1.order.dlq.v1` | Order | Records the `order` consumer group could not process, unchanged | original key | 14d | none; operator replay only |
 | `box1.inventory.dlq.v1` | Inventory | Records the `inventory` consumer group could not process, unchanged | original key | 14d | none; operator replay only |
+| `box1.fulfillment.dlq.v1` | Fulfillment adapter | Records the `fulfillment` consumer group could not process, unchanged | original key | 14d | none; operator replay only |
 
 Every topic needs a bounded retry path and auditable dead-letter/replay procedure. The exact Kafka resource profile remains environment-specific; these are contract-level ownership and retention requirements.

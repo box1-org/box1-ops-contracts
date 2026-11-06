@@ -42,6 +42,7 @@ test('inventory contract covers reservation states, reason codes and its dead-le
   }
   const topics = fs.readFileSync(path.join(root, 'TOPICS.md'), 'utf8');
   assert.match(topics, /box1\.inventory\.dlq\.v1/);
+  assert.match(topics, /box1\.fulfillment\.dlq\.v1/);
   assert.match(topics, /box1\.fulfillment\.events\.v1.*`inventory`/);
   const sql = fs.readFileSync(path.join(root, 'postgres/migrations/inventory/V1__create_inventory.sql'), 'utf8');
   for (const word of ['inventory_stock', 'on_hand', 'outbox', 'COMMITTED', 'CONSUMED']) {
