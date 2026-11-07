@@ -53,6 +53,7 @@
     "provider": {
       "type": "string",
       "enum": [
+        "mailhog",
         "stub"
       ]
     },

@@ -14,6 +14,15 @@ The notification service turns order and shipment facts into notices for named o
 
 Each notice produces at most one of the two events. Delivery is at least once: deduplicate by `eventId`. The envelope's `causationId` is the `eventId` that created the notice, and `correlationId` is carried over from it.
 
+## Providers
+
+`provider` names the backend that accepted or refused the notice:
+
+- `mailhog`: an SMTP message to MailHog, the in-cluster sink (box1-gitops `platform/mailhog`). The Box1 cluster uses it. `notification.delivered.v1` means **accepted by MailHog**, not read by a person; no message leaves the cluster.
+- `stub`: a receipt only, with nothing sent. Used by tests.
+
+Consumers must accept any listed value; a new provider is added here before it is deployed.
+
 ## Notice types
 
 | `noticeType` | Raised by |
