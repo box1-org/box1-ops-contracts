@@ -6,6 +6,8 @@ info:
     Telemetry ingestion and reads for box1-org/asset-service. Every operation needs a bearer token from
     Keycloak realm box1 issued to client asset-service (aud and azp); ingestion needs client role telemetry-writer,
     reads need telemetry-reader, telemetry-writer or chaos-operator.
+    Edge site status writes need a token issued to that site's own client with client role site-reporter and a
+    siteId claim equal to the path siteId (see SITE.md).
     The service's console API (/api/v1/control) is not part of this contract. See TELEMETRY.md.
 servers:
   - url: https://asset-service-dev.apps.ocp.box1.org
@@ -149,6 +151,74 @@ paths:
                 nextCursor: null
         '400': { $ref: '#/components/responses/Problem' }
         '401': { description: No valid token }
+  /api/v1/sites:
+    get:
+      operationId: listSites
+      security: [{ bearer: [telemetry-reader] }, { bearer: [telemetry-writer] }, { bearer: [chaos-operator] }]
+      responses:
+        '200':
+          description: Every site that has reported a status, ordered by siteId, with its state derived at read time
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/SiteStatus' }
+              example:
+                items:
+                  - $ref: '#/components/examples/SiteStatus/value'
+        '401': { description: No valid token }
+        '403': { description: Token lacks a reader role }
+  /api/v1/sites/{siteId}:
+    get:
+      operationId: getSite
+      security: [{ bearer: [telemetry-reader] }, { bearer: [telemetry-writer] }, { bearer: [chaos-operator] }]
+      parameters:
+        - in: path
+          name: siteId
+          required: true
+          schema: { $ref: '#/components/schemas/SiteId' }
+      responses:
+        '200':
+          description: The site's latest status and its state derived at read time
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SiteStatus' }
+              example: { $ref: '#/components/examples/SiteStatus/value' }
+        '401': { description: No valid token }
+        '403': { description: Token lacks a reader role }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/sites/{siteId}/status:
+    put:
+      operationId: reportSiteStatus
+      description: >
+        Heartbeat from an edge site. Replaces the site's latest status; the server records the time it received it as
+        lastSeenAt. Only the site's own client may write (token claim siteId equal to the path siteId).
+      security: [{ bearer: [site-reporter] }]
+      parameters:
+        - in: path
+          name: siteId
+          required: true
+          schema: { $ref: '#/components/schemas/SiteId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SiteStatusReport' }
+            example: { $ref: '#/components/examples/SiteStatusReport/value' }
+      responses:
+        '200':
+          description: Stored; the site's status as readers now see it
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SiteStatus' }
+              example: { $ref: '#/components/examples/SiteStatus/value' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { description: No valid token }
+        '403': { description: Token lacks site-reporter, or its siteId claim is another site's }
 components:
   securitySchemes:
     bearer: { type: http, scheme: bearer, bearerFormat: JWT }
@@ -161,6 +231,38 @@ components:
         measuredAt: '2026-10-25T12:30:00Z'
         value: 72.4
         unit: F
+    SiteStatusReport:
+      value:
+        reportedAt: '2026-11-10T12:00:00Z'
+        bufferDepth: 3
+        siteEventBacklog: 1
+        bufferOldestAgeSeconds: 4
+        readingsDropped: 0
+        bootedImageDigest: sha256:a11d6786b9a86378148ae55194acfd1cfb2d150ad298334fe00798d026abe3fe
+        stagedImageDigest: null
+        rollbackImageDigest: null
+        greenbootStatus: GREEN
+        bundleDigest: sha256:8e9d01383c43e37cbf30b083be311866dc9806158fa09062ede88f9afb41edb6
+        appVersions: { gateway: 1.0.0-SNAPSHOT, ops: 1.0.0-SNAPSHOT, simulator: 1.0.0-SNAPSHOT }
+    SiteStatus:
+      value:
+        siteId: site_spacedock
+        state: ONLINE
+        stateReasons: []
+        lastSeenAt: '2026-11-10T12:00:00.120Z'
+        lastSeenAgeSeconds: 6
+        lastReadingAt: '2026-11-10T12:00:01Z'
+        reportedAt: '2026-11-10T12:00:00Z'
+        bufferDepth: 3
+        siteEventBacklog: 1
+        bufferOldestAgeSeconds: 4
+        readingsDropped: 0
+        bootedImageDigest: sha256:a11d6786b9a86378148ae55194acfd1cfb2d150ad298334fe00798d026abe3fe
+        stagedImageDigest: null
+        rollbackImageDigest: null
+        greenbootStatus: GREEN
+        bundleDigest: sha256:8e9d01383c43e37cbf30b083be311866dc9806158fa09062ede88f9afb41edb6
+        appVersions: { gateway: 1.0.0-SNAPSHOT, ops: 1.0.0-SNAPSHOT, simulator: 1.0.0-SNAPSHOT }
   responses:
     Problem:
       description: RFC 9457 problem with a stable code
@@ -229,6 +331,61 @@ components:
         sourceEventId: { type: string, format: uuid, description: The reading that activated the alert }
         eventId: { type: string, format: uuid, description: The equipment.threshold-exceeded.v1 event }
         traceparent: { type: [string, 'null'] }
+    ImageDigest: { type: string, pattern: '^sha256:[a-f0-9]{64}$' }
+    SiteStatusReport:
+      type: object
+      additionalProperties: false
+      required: [reportedAt, bufferDepth, siteEventBacklog, bufferOldestAgeSeconds, readingsDropped, greenbootStatus, appVersions]
+      properties:
+        reportedAt: { type: string, format: date-time, description: The site's clock when it sent the report }
+        bufferDepth: { type: integer, minimum: 0, description: Unpublished outbox rows (readings and site events) }
+        siteEventBacklog: { type: integer, minimum: 0, description: Unpublished site events, which are never dropped }
+        bufferOldestAgeSeconds: { type: integer, minimum: 0, description: Age of the oldest unpublished row; 0 when empty }
+        readingsDropped: { type: integer, minimum: 0, description: Readings dropped by the buffer bound since the gateway started }
+        bootedImageDigest:
+          description: The OS image digest the site booted (bootc status), or null when unknown
+          oneOf: [{ $ref: '#/components/schemas/ImageDigest' }, { type: 'null' }]
+        stagedImageDigest:
+          description: An OS image staged for the next boot, if any
+          oneOf: [{ $ref: '#/components/schemas/ImageDigest' }, { type: 'null' }]
+        rollbackImageDigest:
+          description: The OS image bootc would roll back to, if any
+          oneOf: [{ $ref: '#/components/schemas/ImageDigest' }, { type: 'null' }]
+        greenbootStatus: { type: string, enum: [GREEN, RED, UNKNOWN], description: Result of the boot's greenboot health checks }
+        bundleDigest:
+          description: The site-gateway bundle digest built into the booted image, or null when unknown
+          oneOf: [{ $ref: '#/components/schemas/ImageDigest' }, { type: 'null' }]
+        appVersions:
+          type: object
+          maxProperties: 8
+          propertyNames: { pattern: '^[a-z][a-z0-9-]{0,31}$' }
+          additionalProperties: { type: string, minLength: 1, maxLength: 64 }
+    SiteStatus:
+      type: object
+      required: [siteId, state, stateReasons, lastSeenAt, lastSeenAgeSeconds, reportedAt, bufferDepth, siteEventBacklog, bufferOldestAgeSeconds, readingsDropped, greenbootStatus, appVersions]
+      properties:
+        siteId: { $ref: '#/components/schemas/SiteId' }
+        state: { type: string, enum: [ONLINE, DEGRADED, OFFLINE] }
+        stateReasons:
+          type: array
+          description: Why the site is not ONLINE; empty when it is
+          items: { type: string, enum: [HEARTBEAT_STALE, BUFFER_DEPTH, BUFFER_AGE, GREENBOOT_RED] }
+        lastSeenAt: { type: string, format: date-time, description: When asset-service received the latest status }
+        lastSeenAgeSeconds: { type: integer, minimum: 0 }
+        lastReadingAt: { type: [string, 'null'], format: date-time, description: measuredAt of the site's latest stored reading }
+        reportedAt: { type: string, format: date-time }
+        bufferDepth: { type: integer, minimum: 0 }
+        siteEventBacklog: { type: integer, minimum: 0 }
+        bufferOldestAgeSeconds: { type: integer, minimum: 0 }
+        readingsDropped: { type: integer, minimum: 0 }
+        bootedImageDigest: { oneOf: [{ $ref: '#/components/schemas/ImageDigest' }, { type: 'null' }] }
+        stagedImageDigest: { oneOf: [{ $ref: '#/components/schemas/ImageDigest' }, { type: 'null' }] }
+        rollbackImageDigest: { oneOf: [{ $ref: '#/components/schemas/ImageDigest' }, { type: 'null' }] }
+        greenbootStatus: { type: string, enum: [GREEN, RED, UNKNOWN] }
+        bundleDigest: { oneOf: [{ $ref: '#/components/schemas/ImageDigest' }, { type: 'null' }] }
+        appVersions:
+          type: object
+          additionalProperties: { type: string }
     Problem:
       type: object
       required: [type, title, status, code]

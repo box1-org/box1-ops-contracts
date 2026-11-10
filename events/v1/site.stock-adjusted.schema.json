@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/site.stock-adjusted.schema.json",
+  "title": "SiteStockAdjusted payload v1",
+  "description": "A cycle count at a site: the units of one SKU physically present at countedAt. See SITE.md for how inventory-service applies it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["siteId", "countId", "sku", "countedQuantity", "countedAt", "reason"],
+  "properties": {
+    "siteId": { "type": "string", "pattern": "^site_[A-Za-z0-9_-]+$" },
+    "countId": { "type": "string", "pattern": "^cnt_[A-Za-z0-9_-]{1,64}$" },
+    "sku": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "countedQuantity": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+    "countedAt": { "type": "string", "format": "date-time" },
+    "reason": { "type": "string", "enum": ["CYCLE_COUNT"] }
+  }
+}

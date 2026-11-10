@@ -49,7 +49,7 @@ const validateOpenApi = (file, requiredPaths, requiredSchema) => {
 };
 validateOpenApi('order-service.yaml', ['/api/v1/orders', '/api/v1/orders/{orderId}', '/api/v1/orders/{orderId}/timeline'], 'Order');
 validateOpenApi('inventory-service.yaml', ['/api/v1/inventory', '/api/v1/reservations/{reservationId}', '/internal/v1/stock/{siteId}/{sku}/restock', '/internal/v1/reservations/{reservationId}/release'], 'Reservation');
-validateOpenApi('asset-service.yaml', ['/api/v1/telemetry/readings', '/api/v1/assets/{assetId}/readings', '/api/v1/alerts'], 'Alert');
+validateOpenApi('asset-service.yaml', ['/api/v1/telemetry/readings', '/api/v1/assets/{assetId}/readings', '/api/v1/alerts', '/api/v1/sites', '/api/v1/sites/{siteId}', '/api/v1/sites/{siteId}/status'], 'Alert');
 const reasons = ['SITE_UNAVAILABLE', 'UNKNOWN_SKU', 'INSUFFICIENT_STOCK'];
 const reservations = fs.readFileSync(path.join(root, 'INVENTORY-RESERVATIONS.md'), 'utf8');
 for (const reason of reasons) {

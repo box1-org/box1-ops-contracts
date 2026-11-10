@@ -214,5 +214,77 @@
       "httpStatus": 503,
       "failedAt": "2026-10-25T14:01:10Z"
     }
+  },
+  {
+    "eventId": "c127b8e5-a509-34d4-a82c-fe3e11618a8e",
+    "eventType": "equipment.reading.v1",
+    "schemaVersion": 1,
+    "aggregateId": "asset_replicator_spacedock",
+    "occurredAt": "2026-11-10T12:00:00.250Z",
+    "correlationId": "c127b8e5-a509-34d4-a82c-fe3e11618a8e",
+    "causationId": "ingest:site",
+    "payload": {
+      "assetId": "asset_replicator_spacedock",
+      "siteId": "site_spacedock",
+      "measuredAt": "2026-11-10T12:00:00Z",
+      "metricName": "temperature",
+      "value": 21.5,
+      "unit": "C"
+    },
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+  },
+  {
+    "eventId": "61616161-6161-4161-8161-616161616161",
+    "eventType": "site.pick-confirmed.v1",
+    "schemaVersion": 1,
+    "aggregateId": "site_ds9",
+    "occurredAt": "2026-11-10T12:05:00Z",
+    "correlationId": "ord_2001",
+    "causationId": "22222222-2222-4222-8222-222222222222",
+    "payload": {
+      "siteId": "site_ds9",
+      "pickId": "pick_6f1c2a",
+      "orderId": "ord_2001",
+      "reservationId": "res_2001",
+      "sku": "SKU-42",
+      "quantity": 2,
+      "pickedAt": "2026-11-10T12:04:58Z"
+    },
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+  },
+  {
+    "eventId": "62626262-6262-4262-8262-626262626262",
+    "eventType": "site.stock-adjusted.v1",
+    "schemaVersion": 1,
+    "aggregateId": "site_ds9",
+    "occurredAt": "2026-11-10T12:10:00Z",
+    "correlationId": "cnt_9d3e41",
+    "causationId": "site-ops:count",
+    "payload": {
+      "siteId": "site_ds9",
+      "countId": "cnt_9d3e41",
+      "sku": "SKU-42",
+      "countedQuantity": 17,
+      "countedAt": "2026-11-10T12:09:30Z",
+      "reason": "CYCLE_COUNT"
+    }
+  },
+  {
+    "eventId": "63636363-6363-4363-8363-636363636363",
+    "eventType": "site.stock-held.v1",
+    "schemaVersion": 1,
+    "aggregateId": "site_spacedock",
+    "occurredAt": "2026-11-10T12:15:00Z",
+    "correlationId": "hold_51ab07",
+    "causationId": "site-ops:hold",
+    "payload": {
+      "siteId": "site_spacedock",
+      "holdId": "hold_51ab07",
+      "sku": "SKU-7",
+      "quantity": 1,
+      "action": "PLACED",
+      "reasonCode": "DAMAGED",
+      "changedAt": "2026-11-10T12:14:40Z"
+    }
   }
 ]

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.box1.org/events/v1/site.pick-confirmed.schema.json",
+  "title": "SitePickConfirmed payload v1",
+  "description": "A site operator confirmed that the reserved units of one reservation were picked. See SITE.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["siteId", "pickId", "orderId", "reservationId", "sku", "quantity", "pickedAt"],
+  "properties": {
+    "siteId": { "type": "string", "pattern": "^site_[A-Za-z0-9_-]+$" },
+    "pickId": { "type": "string", "pattern": "^pick_[A-Za-z0-9_-]{1,64}$" },
+    "orderId": { "type": "string", "pattern": "^ord_[A-Za-z0-9_-]+$" },
+    "reservationId": { "type": "string", "pattern": "^res_[A-Za-z0-9_-]+$" },
+    "sku": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "quantity": { "type": "integer", "minimum": 1 },
+    "pickedAt": { "type": "string", "format": "date-time" }
+  }
+}
