@@ -6,7 +6,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const schemaDir = path.join(root, 'events/v1');
 const schema = name => JSON.parse(fs.readFileSync(path.join(schemaDir, name), 'utf8'));
 test('v1 payload schemas retain required fields and types', () => {
-  for (const name of ['order.placed.schema.json','inventory.reserved.schema.json','fulfillment.requested.schema.json','shipment.confirmed.schema.json','equipment.reading.schema.json','inventory.rejected.schema.json','inventory.reservation-expired.schema.json','shipment.failed.schema.json','order.state-changed.schema.json','equipment.threshold-exceeded.schema.json','notification.delivered.schema.json','notification.failed.schema.json']) {
+  for (const name of ['order.placed.schema.json','inventory.reserved.schema.json','fulfillment.requested.schema.json','shipment.confirmed.schema.json','equipment.reading.schema.json','inventory.rejected.schema.json','inventory.reservation-expired.schema.json','shipment.failed.schema.json','order.state-changed.schema.json','equipment.threshold-exceeded.schema.json','notification.delivered.schema.json','notification.failed.schema.json','site.pick-confirmed.schema.json','site.stock-adjusted.schema.json','site.stock-held.schema.json']) {
     const value = schema(name);
     assert.ok(value.required.length > 0, name);
     for (const key of value.required) assert.ok(value.properties[key], `${name}: missing ${key}`);
@@ -81,4 +81,48 @@ test('notification contract: closed payloads, no customer fields, order-topic co
     assert.ok(event, type);
     assert.equal(event.aggregateId, event.payload.orderId);
   }
+});
+
+test('site contract: closed payloads keyed by siteId, its topic, groups and status API', () => {
+  const ids = { 'site.pick-confirmed.schema.json': 'pickId', 'site.stock-adjusted.schema.json': 'countId', 'site.stock-held.schema.json': 'holdId' };
+  for (const [name, localId] of Object.entries(ids)) {
+    const value = schema(name);
+    assert.equal(value.additionalProperties, false, name);
+    for (const key of ['siteId', localId]) assert.ok(value.required.includes(key), `${name}: ${key}`);
+    assert.equal(value.properties.siteId.pattern, '^site_[A-Za-z0-9_-]+$', name);
+  }
+  assert.deepEqual(schema('site.stock-held.schema.json').properties.action.enum, ['PLACED', 'RELEASED']);
+  assert.equal(schema('site.stock-adjusted.schema.json').properties.countedQuantity.minimum, 0);
+  const fixtures = JSON.parse(fs.readFileSync(path.join(root, 'fixtures/events.json'), 'utf8'));
+  for (const type of ['site.pick-confirmed.v1', 'site.stock-adjusted.v1', 'site.stock-held.v1']) {
+    const event = fixtures.find(e => e.eventType === type);
+    assert.ok(event, type);
+    assert.equal(event.aggregateId, event.payload.siteId, `${type}: aggregateId is the siteId key`);
+  }
+  const topics = fs.readFileSync(path.join(root, 'TOPICS.md'), 'utf8');
+  assert.match(topics, /`box1\.site\.events\.v1` \| Edge sites .*\| `siteId` \|.*`inventory-site`/);
+  assert.match(topics, /`box1\.site\.dlq\.v1` \| Inventory/);
+  assert.match(topics, /box1\.inventory\.events\.v1.*`site-gateway-<siteId>`/);
+  assert.match(topics, /box1\.fulfillment\.events\.v1.*`site-gateway-<siteId>`/);
+  const site = fs.readFileSync(path.join(root, 'SITE.md'), 'utf8');
+  for (const word of ['PICK_NOT_HELD', 'PICK_MISMATCH', 'COUNT_CONFLICT', 'COUNT_UNKNOWN_STOCK', 'HOLD_UNKNOWN', 'box1-site-id', 'ingest:site', 'OFFLINE', 'DEGRADED']) {
+    assert.match(site, new RegExp(word));
+  }
+});
+
+test('a site reading uses the shared name-based eventId derivation (test vector)', async () => {
+  const { createHash } = await import('node:crypto');
+  const nameUuid = text => {
+    const b = createHash('md5').update(text, 'utf8').digest();
+    b[6] = (b[6] & 0x0f) | 0x30;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    const h = b.toString('hex');
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  };
+  const fixtures = JSON.parse(fs.readFileSync(path.join(root, 'fixtures/events.json'), 'utf8'));
+  const reading = fixtures.find(e => e.eventType === 'equipment.reading.v1' && e.causationId === 'ingest:site');
+  assert.ok(reading);
+  const p = reading.payload;
+  assert.equal(reading.eventId, nameUuid(`box1/equipment.reading.v1/${p.assetId}/${p.metricName}/${p.measuredAt}`));
+  assert.equal(reading.aggregateId, p.assetId);
 });

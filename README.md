@@ -18,4 +18,6 @@ The legacy ERP file protocol (`ERP1`), shared by the ERP appliance and the fulfi
 
 Notification events, notice types and their deduplication rules are in [`NOTIFICATION.md`](NOTIFICATION.md).
 
+Edge site events, the site topic, their effect in the Inventory service, site pick lists and the site status API are in [`SITE.md`](SITE.md).
+
 PostgreSQL ownership, Flyway rules, Secret bootstrap, storage, backup, and restore guidance is in [`postgres/`](postgres/).
